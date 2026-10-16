@@ -1,0 +1,366 @@
+{
+  "id": "scout-sdr",
+  "name": "Scout SDR workload",
+  "description": "The four AI jobs Scout runs during a prospecting day, rebuilt on fictional Bay Area accounts so no customer data leaves the laptop. Same task shapes, same rules, same output fields.",
+  "today": "2026-10-16",
+  "rep": { "name": "Aaron", "company": "a Bay Area managed technology provider", "city": "San Jose", "phone": "(408) 555-0142" },
+  "tasks": [
+    {
+      "id": "signal-coyote-creek",
+      "type": "signal",
+      "title": "Coyote Creek Precision: new Fremont site",
+      "account": {
+        "company": "Coyote Creek Precision",
+        "city": "Milpitas",
+        "industry": "Contract CNC machining for aerospace and medical",
+        "employees": "140",
+        "contact": { "name": "Dan Okafor", "title": "Operations Manager" },
+        "crmNotes": "2025-02: bought toner through us once. No contract.",
+        "research": "2026-09-22 press release on company site: second facility in Fremont opening Q1 2027, adding 40 jobs. 2026-10-03 job posting: IT Systems Administrator, Milpitas, 'help stand up network and security for our new site'."
+      },
+      "gold": { "signalStatus": "HARD SIGNAL" }
+    },
+    {
+      "id": "signal-baylight",
+      "type": "signal",
+      "title": "Baylight Architecture: nothing new",
+      "account": {
+        "company": "Baylight Architecture",
+        "city": "Campbell",
+        "industry": "Architecture and interior design",
+        "employees": "38",
+        "contact": { "name": "Tom Lindqvist", "title": "Principal" },
+        "crmNotes": "2025-04: Tom said they're happy with their copier vendor. Uses a lot of large-format plotting.",
+        "research": "Website unchanged since 2024. Most recent news item: a 2023 regional design award. LinkedIn headcount flat at 38 for 18 months."
+      },
+      "gold": { "signalStatus": "NO RECENT SIGNAL" }
+    },
+    {
+      "id": "signal-stevens-creek",
+      "type": "signal",
+      "title": "Stevens Creek Law Group: two new partners",
+      "account": {
+        "company": "Stevens Creek Law Group",
+        "city": "Santa Clara",
+        "industry": "Litigation and employment law",
+        "employees": "45",
+        "contact": { "name": "Rachel Feldman", "title": "Firm Administrator" },
+        "crmNotes": "Net-new. No history.",
+        "research": "2026-08-14 LinkedIn post from the firm: welcomed two new partners, 'continuing to grow our litigation team'. No office move, funding or vendor news found."
+      },
+      "gold": { "signalStatus": "SOFT SIGNAL" }
+    },
+    {
+      "id": "signal-saratoga",
+      "type": "signal",
+      "title": "Saratoga Senior Living: ransomware at a sister site",
+      "account": {
+        "company": "Saratoga Senior Living",
+        "city": "Saratoga",
+        "industry": "Assisted living and memory care",
+        "employees": "95",
+        "contact": { "name": "Linda Cho", "title": "Executive Director" },
+        "crmNotes": "2024-11: left voicemail about managed print. No callback.",
+        "research": "2026-07-29 local news: a ransomware incident took resident records offline for four days at a sister facility in Sacramento owned by the same parent company, Oakview Senior Communities. Parent says it is 'reviewing security across all locations'."
+      },
+      "gold": { "signalStatus": "HARD SIGNAL" }
+    },
+    {
+      "id": "signal-pinecrest",
+      "type": "signal",
+      "title": "Pinecrest Property: undated 'modernizing' post",
+      "account": {
+        "company": "Pinecrest Property Management",
+        "city": "Sunnyvale",
+        "industry": "Residential property management",
+        "employees": "30",
+        "contact": { "name": "Sofia Nguyen", "title": "COO" },
+        "crmNotes": "2024-03: copier lease with competitor ends 'sometime in 2025'.",
+        "research": "Undated company blog post: 'modernizing how we serve tenants', mentions moving lease paperwork online. No dated news in the last 12 months."
+      },
+      "gold": { "signalStatus": "SOFT SIGNAL" }
+    },
+    {
+      "id": "signal-summit",
+      "type": "signal",
+      "title": "Summit Roofing: CFO said call in the fall",
+      "account": {
+        "company": "Summit Roofing & Solar",
+        "city": "Morgan Hill",
+        "industry": "Commercial roofing and solar installation",
+        "employees": "75",
+        "contact": { "name": "Greg Alvarez", "title": "CFO" },
+        "crmNotes": "2026-01-20 call: Greg said 'call me in the fall when we set next year's budget', interested in consolidating IT and phones.",
+        "research": "No news or postings since 2024. Website unchanged."
+      },
+      "gold": { "signalStatus": "NO RECENT SIGNAL" }
+    },
+
+    {
+      "id": "debrief-redwood-gatekeeper",
+      "type": "debrief",
+      "title": "Redwood Ridge Dental: front desk",
+      "account": {
+        "company": "Redwood Ridge Dental Group",
+        "city": "San Jose",
+        "industry": "Dental group, 4 offices",
+        "employees": "85",
+        "contact": { "name": "Maria Velasquez", "title": "Office Manager" },
+        "crmNotes": "Net-new.",
+        "research": "2026-09: opened a fourth office in Los Gatos."
+      },
+      "callNotes": "10:15 called main line. front desk (Jess) said Maria handles all vendor stuff, she's out til Monday, call back then. didnt leave msg. jess said they're 'drowning in paper' at the new office lol",
+      "gold": { "outcome": "gatekeeper", "meetingAsked": false, "meetingBooked": false }
+    },
+    {
+      "id": "debrief-mission-peak-booked",
+      "type": "debrief",
+      "title": "Mission Peak Biologics: meeting booked",
+      "account": {
+        "company": "Mission Peak Biologics",
+        "city": "Fremont",
+        "industry": "Biotech research lab",
+        "employees": "120",
+        "contact": { "name": "Arjun Mehta", "title": "IT Director" },
+        "crmNotes": "Net-new.",
+        "research": "2026-06: Series B, expanding lab space."
+      },
+      "callNotes": "got arjun direct, 12 min. one in-house IT guy + an MSP for after hours. MSP slow on weekends, freezer alarm went off a saturday in aug and nobody responded for 3 hrs, lost samples. he owns the decision w/ CFO. asked for 20 min next week to walk through after-hours coverage + MDR. he said thurs 2pm, send invite.",
+      "gold": { "outcome": "meeting_booked", "meetingAsked": true, "meetingBooked": true }
+    },
+    {
+      "id": "debrief-stevens-creek-no",
+      "type": "debrief",
+      "title": "Stevens Creek Law: just signed elsewhere",
+      "account": {
+        "company": "Stevens Creek Law Group",
+        "city": "Santa Clara",
+        "industry": "Litigation and employment law",
+        "employees": "45",
+        "contact": { "name": "Rachel Feldman", "title": "Firm Administrator" },
+        "crmNotes": "Net-new.",
+        "research": "2026-08: two new partners."
+      },
+      "callNotes": "rachel picked up. said they signed a 3 yr deal with another IT provider in july, not interested, maybe revisit in 2029. polite. didnt push.",
+      "gold": { "outcome": "not_interested", "meetingAsked": false, "meetingBooked": false }
+    },
+    {
+      "id": "debrief-guadalupe-followup",
+      "type": "debrief",
+      "title": "Guadalupe Freight: needs the GM",
+      "account": {
+        "company": "Guadalupe Freight Logistics",
+        "city": "San Jose",
+        "industry": "Third-party logistics warehouse",
+        "employees": "210",
+        "contact": { "name": "Kevin Tran", "title": "Facilities Director" },
+        "crmNotes": "2025-10: quoted cameras, went dark.",
+        "research": "No news."
+      },
+      "callNotes": "kevin answered. theft at dock door 4 in sept, cameras didnt catch plates. interested in verkada-style cameras on the docks. GM signs anything over 10k. asked for a meeting w/ both of them, he wants to talk to GM first. call him back next wed.",
+      "gold": { "outcome": "follow_up_required", "meetingAsked": true, "meetingBooked": false }
+    },
+    {
+      "id": "debrief-almaden-noanswer",
+      "type": "debrief",
+      "title": "Almaden Montessori: no answer",
+      "account": {
+        "company": "Almaden Valley Montessori",
+        "city": "San Jose",
+        "industry": "Private K-8 school",
+        "employees": "60",
+        "contact": { "name": "Priya Raman", "title": "Head of School" },
+        "crmNotes": "3 prior no-answers (Sep 2026).",
+        "research": "2026-08: announced a new STEM building opening Jan 2027."
+      },
+      "callNotes": "rang out. no vm box set up. 4th no answer this month.",
+      "gold": { "outcome": "no_answer", "meetingAsked": false, "meetingBooked": false }
+    },
+    {
+      "id": "debrief-lakeside-booked",
+      "type": "debrief",
+      "title": "Lakeside Ortho: billing audit booked",
+      "account": {
+        "company": "Lakeside Ortho Devices",
+        "city": "Santa Clara",
+        "industry": "Medical device manufacturing",
+        "employees": "160",
+        "contact": { "name": "Paul Hendricks", "title": "Plant Controller" },
+        "crmNotes": "Existing customer. 2 open billing tickets.",
+        "research": "No news."
+      },
+      "callNotes": "reached paul. overcharged on overages 3 months running, hes frustrated, threatened to look elsewhere at renewal. equipment decisions = him + plant manager. i asked for 15 min on site to audit the billing and fix it. he said yes tues 9am.",
+      "gold": { "outcome": "meeting_booked", "meetingAsked": true, "meetingBooked": true }
+    },
+
+    {
+      "id": "email-coyote-creek",
+      "type": "email",
+      "title": "Coyote Creek: network for the new site",
+      "account": {
+        "company": "Coyote Creek Precision",
+        "city": "Milpitas",
+        "industry": "Contract CNC machining for aerospace and medical",
+        "employees": "140",
+        "contact": { "name": "Dan Okafor", "title": "Operations Manager" },
+        "crmNotes": "2025-02: bought toner once. No contract.",
+        "research": "2026-09-22: second facility in Fremont opening Q1 2027. 2026-10-03: hiring an IT Systems Administrator to 'stand up network and security for our new site'."
+      }
+    },
+    {
+      "id": "email-saratoga",
+      "type": "email",
+      "title": "Saratoga Senior Living: security review",
+      "account": {
+        "company": "Saratoga Senior Living",
+        "city": "Saratoga",
+        "industry": "Assisted living and memory care",
+        "employees": "95",
+        "contact": { "name": "Linda Cho", "title": "Executive Director" },
+        "crmNotes": "2024-11: voicemail about print, no callback.",
+        "research": "2026-07-29: ransomware hit a sister facility under the same parent (Oakview Senior Communities); parent 'reviewing security across all locations'."
+      }
+    },
+    {
+      "id": "email-guadalupe",
+      "type": "email",
+      "title": "Guadalupe Freight: dock cameras",
+      "account": {
+        "company": "Guadalupe Freight Logistics",
+        "city": "San Jose",
+        "industry": "Third-party logistics warehouse",
+        "employees": "210",
+        "contact": { "name": "Kevin Tran", "title": "Facilities Director" },
+        "crmNotes": "2025-10: quoted cameras, went dark. 2026-10 call: theft at dock door 4 in Sept, cameras missed plates; GM signs over $10k.",
+        "research": "No news."
+      }
+    },
+    {
+      "id": "email-pinecrest",
+      "type": "email",
+      "title": "Pinecrest: paperless leasing",
+      "account": {
+        "company": "Pinecrest Property Management",
+        "city": "Sunnyvale",
+        "industry": "Residential property management",
+        "employees": "30",
+        "contact": { "name": "Sofia Nguyen", "title": "COO" },
+        "crmNotes": "2024-03: competitor copier lease ending 2025.",
+        "research": "Undated blog post: 'modernizing how we serve tenants', moving lease paperwork online."
+      }
+    },
+    {
+      "id": "email-baylight",
+      "type": "email",
+      "title": "Baylight: question-first, no signal",
+      "account": {
+        "company": "Baylight Architecture",
+        "city": "Campbell",
+        "industry": "Architecture and interior design",
+        "employees": "38",
+        "contact": { "name": "Tom Lindqvist", "title": "Principal" },
+        "crmNotes": "2025-04: happy with copier vendor. Heavy large-format plotting.",
+        "research": "No news since 2023."
+      }
+    },
+    {
+      "id": "email-mission-peak",
+      "type": "email",
+      "title": "Mission Peak: after-hours coverage",
+      "account": {
+        "company": "Mission Peak Biologics",
+        "city": "Fremont",
+        "industry": "Biotech research lab",
+        "employees": "120",
+        "contact": { "name": "Arjun Mehta", "title": "IT Director" },
+        "crmNotes": "Net-new.",
+        "research": "2026-06: Series B, expanding lab space. Job posting 2026-09: 'Lab Systems Engineer, on-call rotation'."
+      }
+    },
+
+    {
+      "id": "callcard-lakeside",
+      "type": "callcard",
+      "title": "Lakeside Ortho: unhappy existing customer",
+      "account": {
+        "company": "Lakeside Ortho Devices",
+        "city": "Santa Clara",
+        "industry": "Medical device manufacturing",
+        "employees": "160",
+        "contact": { "name": "Paul Hendricks", "title": "Plant Controller" },
+        "crmNotes": "Existing customer, 60-month lease ends in 7 months. 2 open billing tickets about overage charges. Service response complaints in Q2.",
+        "research": "No news. Plant manager is Diane Roy (LinkedIn, current)."
+      }
+    },
+    {
+      "id": "callcard-summit",
+      "type": "callcard",
+      "title": "Summit Roofing: the fall callback",
+      "account": {
+        "company": "Summit Roofing & Solar",
+        "city": "Morgan Hill",
+        "industry": "Commercial roofing and solar installation",
+        "employees": "75",
+        "contact": { "name": "Greg Alvarez", "title": "CFO" },
+        "crmNotes": "2026-01-20: 'call me in the fall when we set next year's budget'. Interested in consolidating IT and phones; three vendors today.",
+        "research": "No news since 2024."
+      }
+    },
+    {
+      "id": "callcard-redwood",
+      "type": "callcard",
+      "title": "Redwood Ridge Dental: fourth office",
+      "account": {
+        "company": "Redwood Ridge Dental Group",
+        "city": "San Jose",
+        "industry": "Dental group, 4 offices",
+        "employees": "85",
+        "contact": { "name": "Maria Velasquez", "title": "Office Manager" },
+        "crmNotes": "2026-10: front desk said Maria owns vendors; new office 'drowning in paper'.",
+        "research": "2026-09: opened a fourth office in Los Gatos."
+      }
+    },
+    {
+      "id": "callcard-mission-peak",
+      "type": "callcard",
+      "title": "Mission Peak: IT director cold call",
+      "account": {
+        "company": "Mission Peak Biologics",
+        "city": "Fremont",
+        "industry": "Biotech research lab",
+        "employees": "120",
+        "contact": { "name": "Arjun Mehta", "title": "IT Director" },
+        "crmNotes": "Net-new.",
+        "research": "2026-06: Series B, expanding lab space. 2026-09 posting: 'Lab Systems Engineer, on-call rotation'."
+      }
+    },
+    {
+      "id": "callcard-almaden",
+      "type": "callcard",
+      "title": "Almaden Montessori: new STEM building",
+      "account": {
+        "company": "Almaden Valley Montessori",
+        "city": "San Jose",
+        "industry": "Private K-8 school",
+        "employees": "60",
+        "contact": { "name": "Priya Raman", "title": "Head of School" },
+        "crmNotes": "4 no-answers in Sep-Oct 2026. No voicemail box.",
+        "research": "2026-08: new STEM building opening Jan 2027."
+      }
+    },
+    {
+      "id": "callcard-saratoga",
+      "type": "callcard",
+      "title": "Saratoga Senior Living: after the incident",
+      "account": {
+        "company": "Saratoga Senior Living",
+        "city": "Saratoga",
+        "industry": "Assisted living and memory care",
+        "employees": "95",
+        "contact": { "name": "Linda Cho", "title": "Executive Director" },
+        "crmNotes": "2024-11: voicemail about print, no callback.",
+        "research": "2026-07-29: ransomware at sister facility (same parent, Oakview Senior Communities). Parent reviewing security at all locations; regional IT lead is Marcus Bell."
+      }
+    }
+  ]
+}

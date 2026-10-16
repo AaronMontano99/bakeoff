@@ -1,0 +1,42 @@
+{
+  "name": "bakeoff",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Inference bake-off on a real sales workload: latency, throughput, cost and eval quality across providers, with a business case at the end.",
+  "scripts": {
+    "setup": "npx -y node@22 \"$(readlink -f \"$(which npm)\")\" install",
+    "dev": "npx -y node@22 --no-warnings node_modules/next/dist/bin/next dev -p 3100",
+    "build": "npx -y node@22 --no-warnings node_modules/next/dist/bin/next build",
+    "start": "npx -y node@22 --no-warnings node_modules/next/dist/bin/next start -p 3100",
+    "bakeoff": "npx -y node@22 --no-warnings --import tsx src/cli/index.ts",
+    "test": "npx -y node@22 --no-warnings node_modules/vitest/vitest.mjs run",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
+    "cmdk": "^1.1.1",
+    "lucide-react": "^1.58.0",
+    "motion": "^14.3.0",
+    "next": "^16.4.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "server-only": "^0.0.1",
+    "sonner": "^2.0.8",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "postcss": "^8.5.30",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
+  }
+}

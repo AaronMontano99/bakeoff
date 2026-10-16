@@ -1,0 +1,142 @@
+@import 'tailwindcss';
+
+/*
+ * Forest & paper. White surfaces, deep forest green for structure and
+ * primary actions, sage tints for selection. Data colors are separate
+ * (see src/lib/palette.ts) so the brand green never gets confused with
+ * a series.
+ */
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --color-paper: #ffffff;
+  --color-mist: #f6f8f6;
+  --color-sage-50: #f1f7f3;
+  --color-sage-100: #e4efe8;
+  --color-sage-200: #cfe2d6;
+  --color-sage-300: #a9cbb5;
+  --color-line: #e3e9e5;
+  --color-line-strong: #cbd6ce;
+
+  --color-forest-950: #071a12;
+  --color-forest-900: #0b2a1d;
+  --color-forest-800: #10392a;
+  --color-forest-700: #164d37;
+  --color-forest-600: #1c6446;
+  --color-forest-500: #237a55;
+  --color-forest-400: #3c9a6f;
+  --color-forest-300: #74bd96;
+
+  --color-ink: #0e1c15;
+  --color-ink-2: #3f5147;
+  --color-ink-3: #6f8077;
+  --color-ink-4: #9aa8a0;
+
+  --color-good: #1c6446;
+  --color-warn: #a86a12;
+  --color-bad: #b4321f;
+
+  --radius-xl: 14px;
+  --radius-2xl: 18px;
+
+  --shadow-card: 0 1px 0 rgb(14 28 21 / 0.03), 0 1px 2px rgb(14 28 21 / 0.06);
+  --shadow-lift: 0 1px 0 rgb(14 28 21 / 0.04), 0 8px 24px -8px rgb(14 28 21 / 0.18);
+  --shadow-pop: 0 24px 60px -12px rgb(7 26 18 / 0.35), 0 0 0 1px rgb(14 28 21 / 0.06);
+
+  --animate-shimmer: shimmer 2.2s linear infinite;
+  --animate-pulse-dot: pulse-dot 1.6s ease-in-out infinite;
+  --animate-caret: caret 1s steps(1) infinite;
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(35 122 85 / 0.45); }
+  50% { box-shadow: 0 0 0 5px rgb(35 122 85 / 0); }
+}
+@keyframes caret {
+  50% { opacity: 0; }
+}
+
+:root {
+  color-scheme: light;
+  --ring: 0 0 0 3px rgb(35 122 85 / 0.22);
+}
+
+html,
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-feature-settings: 'ss01', 'cv11';
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-sage-200);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: 8px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hairline dotted grid behind hero areas (after Vercel/Linear landing pages). */
+.bg-grid {
+  background-image: radial-gradient(rgb(22 77 55 / 0.13) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+/* Animated sheen used on running progress bars (after Magic UI's shimmer). */
+.sheen {
+  background-image: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.45) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+/* cmdk */
+[cmdk-item][data-selected='true'] {
+  background: var(--color-sage-100);
+  color: var(--color-forest-900);
+}
+[cmdk-group-heading] {
+  padding: 10px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+  @page {
+    margin: 14mm;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
