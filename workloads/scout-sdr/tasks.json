@@ -3,7 +3,12 @@
   "name": "Scout SDR workload",
   "description": "The four AI jobs Scout runs during a prospecting day, rebuilt on fictional Bay Area accounts so no customer data leaves the laptop. Same task shapes, same rules, same output fields.",
   "today": "2026-10-16",
-  "rep": { "name": "Aaron", "company": "a Bay Area managed technology provider", "city": "San Jose", "phone": "(408) 555-0142" },
+  "rep": {
+    "name": "Aaron",
+    "company": "a Bay Area managed technology provider",
+    "city": "San Jose",
+    "phone": "(408) 555-0142"
+  },
   "tasks": [
     {
       "id": "signal-coyote-creek",
@@ -14,11 +19,17 @@
         "city": "Milpitas",
         "industry": "Contract CNC machining for aerospace and medical",
         "employees": "140",
-        "contact": { "name": "Dan Okafor", "title": "Operations Manager" },
+        "contact": {
+          "name": "Dan Okafor",
+          "title": "Operations Manager"
+        },
         "crmNotes": "2025-02: bought toner through us once. No contract.",
         "research": "2026-09-22 press release on company site: second facility in Fremont opening Q1 2027, adding 40 jobs. 2026-10-03 job posting: IT Systems Administrator, Milpitas, 'help stand up network and security for our new site'."
       },
-      "gold": { "signalStatus": "HARD SIGNAL" }
+      "gold": {
+        "signalStatus": "HARD SIGNAL"
+      },
+      "split": "dev"
     },
     {
       "id": "signal-baylight",
@@ -29,11 +40,17 @@
         "city": "Campbell",
         "industry": "Architecture and interior design",
         "employees": "38",
-        "contact": { "name": "Tom Lindqvist", "title": "Principal" },
+        "contact": {
+          "name": "Tom Lindqvist",
+          "title": "Principal"
+        },
         "crmNotes": "2025-04: Tom said they're happy with their copier vendor. Uses a lot of large-format plotting.",
         "research": "Website unchanged since 2024. Most recent news item: a 2023 regional design award. LinkedIn headcount flat at 38 for 18 months."
       },
-      "gold": { "signalStatus": "NO RECENT SIGNAL" }
+      "gold": {
+        "signalStatus": "NO RECENT SIGNAL"
+      },
+      "split": "dev"
     },
     {
       "id": "signal-stevens-creek",
@@ -44,11 +61,17 @@
         "city": "Santa Clara",
         "industry": "Litigation and employment law",
         "employees": "45",
-        "contact": { "name": "Rachel Feldman", "title": "Firm Administrator" },
+        "contact": {
+          "name": "Rachel Feldman",
+          "title": "Firm Administrator"
+        },
         "crmNotes": "Net-new. No history.",
         "research": "2026-08-14 LinkedIn post from the firm: welcomed two new partners, 'continuing to grow our litigation team'. No office move, funding or vendor news found."
       },
-      "gold": { "signalStatus": "SOFT SIGNAL" }
+      "gold": {
+        "signalStatus": "SOFT SIGNAL"
+      },
+      "split": "dev"
     },
     {
       "id": "signal-saratoga",
@@ -59,11 +82,17 @@
         "city": "Saratoga",
         "industry": "Assisted living and memory care",
         "employees": "95",
-        "contact": { "name": "Linda Cho", "title": "Executive Director" },
+        "contact": {
+          "name": "Linda Cho",
+          "title": "Executive Director"
+        },
         "crmNotes": "2024-11: left voicemail about managed print. No callback.",
         "research": "2026-07-29 local news: a ransomware incident took resident records offline for four days at a sister facility in Sacramento owned by the same parent company, Oakview Senior Communities. Parent says it is 'reviewing security across all locations'."
       },
-      "gold": { "signalStatus": "HARD SIGNAL" }
+      "gold": {
+        "signalStatus": "HARD SIGNAL"
+      },
+      "split": "dev"
     },
     {
       "id": "signal-pinecrest",
@@ -74,11 +103,17 @@
         "city": "Sunnyvale",
         "industry": "Residential property management",
         "employees": "30",
-        "contact": { "name": "Sofia Nguyen", "title": "COO" },
+        "contact": {
+          "name": "Sofia Nguyen",
+          "title": "COO"
+        },
         "crmNotes": "2024-03: copier lease with competitor ends 'sometime in 2025'.",
         "research": "Undated company blog post: 'modernizing how we serve tenants', mentions moving lease paperwork online. No dated news in the last 12 months."
       },
-      "gold": { "signalStatus": "SOFT SIGNAL" }
+      "gold": {
+        "signalStatus": "SOFT SIGNAL"
+      },
+      "split": "dev"
     },
     {
       "id": "signal-summit",
@@ -89,13 +124,18 @@
         "city": "Morgan Hill",
         "industry": "Commercial roofing and solar installation",
         "employees": "75",
-        "contact": { "name": "Greg Alvarez", "title": "CFO" },
+        "contact": {
+          "name": "Greg Alvarez",
+          "title": "CFO"
+        },
         "crmNotes": "2026-01-20 call: Greg said 'call me in the fall when we set next year's budget', interested in consolidating IT and phones.",
         "research": "No news or postings since 2024. Website unchanged."
       },
-      "gold": { "signalStatus": "NO RECENT SIGNAL" }
+      "gold": {
+        "signalStatus": "NO RECENT SIGNAL"
+      },
+      "split": "dev"
     },
-
     {
       "id": "debrief-redwood-gatekeeper",
       "type": "debrief",
@@ -105,12 +145,20 @@
         "city": "San Jose",
         "industry": "Dental group, 4 offices",
         "employees": "85",
-        "contact": { "name": "Maria Velasquez", "title": "Office Manager" },
+        "contact": {
+          "name": "Maria Velasquez",
+          "title": "Office Manager"
+        },
         "crmNotes": "Net-new.",
         "research": "2026-09: opened a fourth office in Los Gatos."
       },
       "callNotes": "10:15 called main line. front desk (Jess) said Maria handles all vendor stuff, she's out til Monday, call back then. didnt leave msg. jess said they're 'drowning in paper' at the new office lol",
-      "gold": { "outcome": "gatekeeper", "meetingAsked": false, "meetingBooked": false }
+      "gold": {
+        "outcome": "gatekeeper",
+        "meetingAsked": false,
+        "meetingBooked": false
+      },
+      "split": "dev"
     },
     {
       "id": "debrief-mission-peak-booked",
@@ -121,12 +169,20 @@
         "city": "Fremont",
         "industry": "Biotech research lab",
         "employees": "120",
-        "contact": { "name": "Arjun Mehta", "title": "IT Director" },
+        "contact": {
+          "name": "Arjun Mehta",
+          "title": "IT Director"
+        },
         "crmNotes": "Net-new.",
         "research": "2026-06: Series B, expanding lab space."
       },
       "callNotes": "got arjun direct, 12 min. one in-house IT guy + an MSP for after hours. MSP slow on weekends, freezer alarm went off a saturday in aug and nobody responded for 3 hrs, lost samples. he owns the decision w/ CFO. asked for 20 min next week to walk through after-hours coverage + MDR. he said thurs 2pm, send invite.",
-      "gold": { "outcome": "meeting_booked", "meetingAsked": true, "meetingBooked": true }
+      "gold": {
+        "outcome": "meeting_booked",
+        "meetingAsked": true,
+        "meetingBooked": true
+      },
+      "split": "dev"
     },
     {
       "id": "debrief-stevens-creek-no",
@@ -137,12 +193,20 @@
         "city": "Santa Clara",
         "industry": "Litigation and employment law",
         "employees": "45",
-        "contact": { "name": "Rachel Feldman", "title": "Firm Administrator" },
+        "contact": {
+          "name": "Rachel Feldman",
+          "title": "Firm Administrator"
+        },
         "crmNotes": "Net-new.",
         "research": "2026-08: two new partners."
       },
       "callNotes": "rachel picked up. said they signed a 3 yr deal with another IT provider in july, not interested, maybe revisit in 2029. polite. didnt push.",
-      "gold": { "outcome": "not_interested", "meetingAsked": false, "meetingBooked": false }
+      "gold": {
+        "outcome": "not_interested",
+        "meetingAsked": false,
+        "meetingBooked": false
+      },
+      "split": "dev"
     },
     {
       "id": "debrief-guadalupe-followup",
@@ -153,12 +217,20 @@
         "city": "San Jose",
         "industry": "Third-party logistics warehouse",
         "employees": "210",
-        "contact": { "name": "Kevin Tran", "title": "Facilities Director" },
+        "contact": {
+          "name": "Kevin Tran",
+          "title": "Facilities Director"
+        },
         "crmNotes": "2025-10: quoted cameras, went dark.",
         "research": "No news."
       },
       "callNotes": "kevin answered. theft at dock door 4 in sept, cameras didnt catch plates. interested in verkada-style cameras on the docks. GM signs anything over 10k. asked for a meeting w/ both of them, he wants to talk to GM first. call him back next wed.",
-      "gold": { "outcome": "follow_up_required", "meetingAsked": true, "meetingBooked": false }
+      "gold": {
+        "outcome": "follow_up_required",
+        "meetingAsked": true,
+        "meetingBooked": false
+      },
+      "split": "dev"
     },
     {
       "id": "debrief-almaden-noanswer",
@@ -169,12 +241,20 @@
         "city": "San Jose",
         "industry": "Private K-8 school",
         "employees": "60",
-        "contact": { "name": "Priya Raman", "title": "Head of School" },
+        "contact": {
+          "name": "Priya Raman",
+          "title": "Head of School"
+        },
         "crmNotes": "3 prior no-answers (Sep 2026).",
         "research": "2026-08: announced a new STEM building opening Jan 2027."
       },
       "callNotes": "rang out. no vm box set up. 4th no answer this month.",
-      "gold": { "outcome": "no_answer", "meetingAsked": false, "meetingBooked": false }
+      "gold": {
+        "outcome": "no_answer",
+        "meetingAsked": false,
+        "meetingBooked": false
+      },
+      "split": "dev"
     },
     {
       "id": "debrief-lakeside-booked",
@@ -185,14 +265,21 @@
         "city": "Santa Clara",
         "industry": "Medical device manufacturing",
         "employees": "160",
-        "contact": { "name": "Paul Hendricks", "title": "Plant Controller" },
+        "contact": {
+          "name": "Paul Hendricks",
+          "title": "Plant Controller"
+        },
         "crmNotes": "Existing customer. 2 open billing tickets.",
         "research": "No news."
       },
       "callNotes": "reached paul. overcharged on overages 3 months running, hes frustrated, threatened to look elsewhere at renewal. equipment decisions = him + plant manager. i asked for 15 min on site to audit the billing and fix it. he said yes tues 9am.",
-      "gold": { "outcome": "meeting_booked", "meetingAsked": true, "meetingBooked": true }
+      "gold": {
+        "outcome": "meeting_booked",
+        "meetingAsked": true,
+        "meetingBooked": true
+      },
+      "split": "dev"
     },
-
     {
       "id": "email-coyote-creek",
       "type": "email",
@@ -202,10 +289,14 @@
         "city": "Milpitas",
         "industry": "Contract CNC machining for aerospace and medical",
         "employees": "140",
-        "contact": { "name": "Dan Okafor", "title": "Operations Manager" },
+        "contact": {
+          "name": "Dan Okafor",
+          "title": "Operations Manager"
+        },
         "crmNotes": "2025-02: bought toner once. No contract.",
         "research": "2026-09-22: second facility in Fremont opening Q1 2027. 2026-10-03: hiring an IT Systems Administrator to 'stand up network and security for our new site'."
-      }
+      },
+      "split": "dev"
     },
     {
       "id": "email-saratoga",
@@ -216,10 +307,14 @@
         "city": "Saratoga",
         "industry": "Assisted living and memory care",
         "employees": "95",
-        "contact": { "name": "Linda Cho", "title": "Executive Director" },
+        "contact": {
+          "name": "Linda Cho",
+          "title": "Executive Director"
+        },
         "crmNotes": "2024-11: voicemail about print, no callback.",
         "research": "2026-07-29: ransomware hit a sister facility under the same parent (Oakview Senior Communities); parent 'reviewing security across all locations'."
-      }
+      },
+      "split": "dev"
     },
     {
       "id": "email-guadalupe",
@@ -230,10 +325,14 @@
         "city": "San Jose",
         "industry": "Third-party logistics warehouse",
         "employees": "210",
-        "contact": { "name": "Kevin Tran", "title": "Facilities Director" },
+        "contact": {
+          "name": "Kevin Tran",
+          "title": "Facilities Director"
+        },
         "crmNotes": "2025-10: quoted cameras, went dark. 2026-10 call: theft at dock door 4 in Sept, cameras missed plates; GM signs over $10k.",
         "research": "No news."
-      }
+      },
+      "split": "dev"
     },
     {
       "id": "email-pinecrest",
@@ -244,10 +343,14 @@
         "city": "Sunnyvale",
         "industry": "Residential property management",
         "employees": "30",
-        "contact": { "name": "Sofia Nguyen", "title": "COO" },
+        "contact": {
+          "name": "Sofia Nguyen",
+          "title": "COO"
+        },
         "crmNotes": "2024-03: competitor copier lease ending 2025.",
         "research": "Undated blog post: 'modernizing how we serve tenants', moving lease paperwork online."
-      }
+      },
+      "split": "dev"
     },
     {
       "id": "email-baylight",
@@ -258,10 +361,14 @@
         "city": "Campbell",
         "industry": "Architecture and interior design",
         "employees": "38",
-        "contact": { "name": "Tom Lindqvist", "title": "Principal" },
+        "contact": {
+          "name": "Tom Lindqvist",
+          "title": "Principal"
+        },
         "crmNotes": "2025-04: happy with copier vendor. Heavy large-format plotting.",
         "research": "No news since 2023."
-      }
+      },
+      "split": "dev"
     },
     {
       "id": "email-mission-peak",
@@ -272,12 +379,15 @@
         "city": "Fremont",
         "industry": "Biotech research lab",
         "employees": "120",
-        "contact": { "name": "Arjun Mehta", "title": "IT Director" },
+        "contact": {
+          "name": "Arjun Mehta",
+          "title": "IT Director"
+        },
         "crmNotes": "Net-new.",
         "research": "2026-06: Series B, expanding lab space. Job posting 2026-09: 'Lab Systems Engineer, on-call rotation'."
-      }
+      },
+      "split": "dev"
     },
-
     {
       "id": "callcard-lakeside",
       "type": "callcard",
@@ -287,10 +397,14 @@
         "city": "Santa Clara",
         "industry": "Medical device manufacturing",
         "employees": "160",
-        "contact": { "name": "Paul Hendricks", "title": "Plant Controller" },
+        "contact": {
+          "name": "Paul Hendricks",
+          "title": "Plant Controller"
+        },
         "crmNotes": "Existing customer, 60-month lease ends in 7 months. 2 open billing tickets about overage charges. Service response complaints in Q2.",
         "research": "No news. Plant manager is Diane Roy (LinkedIn, current)."
-      }
+      },
+      "split": "dev"
     },
     {
       "id": "callcard-summit",
@@ -301,10 +415,14 @@
         "city": "Morgan Hill",
         "industry": "Commercial roofing and solar installation",
         "employees": "75",
-        "contact": { "name": "Greg Alvarez", "title": "CFO" },
+        "contact": {
+          "name": "Greg Alvarez",
+          "title": "CFO"
+        },
         "crmNotes": "2026-01-20: 'call me in the fall when we set next year's budget'. Interested in consolidating IT and phones; three vendors today.",
         "research": "No news since 2024."
-      }
+      },
+      "split": "dev"
     },
     {
       "id": "callcard-redwood",
@@ -315,10 +433,14 @@
         "city": "San Jose",
         "industry": "Dental group, 4 offices",
         "employees": "85",
-        "contact": { "name": "Maria Velasquez", "title": "Office Manager" },
+        "contact": {
+          "name": "Maria Velasquez",
+          "title": "Office Manager"
+        },
         "crmNotes": "2026-10: front desk said Maria owns vendors; new office 'drowning in paper'.",
         "research": "2026-09: opened a fourth office in Los Gatos."
-      }
+      },
+      "split": "dev"
     },
     {
       "id": "callcard-mission-peak",
@@ -329,10 +451,14 @@
         "city": "Fremont",
         "industry": "Biotech research lab",
         "employees": "120",
-        "contact": { "name": "Arjun Mehta", "title": "IT Director" },
+        "contact": {
+          "name": "Arjun Mehta",
+          "title": "IT Director"
+        },
         "crmNotes": "Net-new.",
         "research": "2026-06: Series B, expanding lab space. 2026-09 posting: 'Lab Systems Engineer, on-call rotation'."
-      }
+      },
+      "split": "dev"
     },
     {
       "id": "callcard-almaden",
@@ -343,10 +469,14 @@
         "city": "San Jose",
         "industry": "Private K-8 school",
         "employees": "60",
-        "contact": { "name": "Priya Raman", "title": "Head of School" },
+        "contact": {
+          "name": "Priya Raman",
+          "title": "Head of School"
+        },
         "crmNotes": "4 no-answers in Sep-Oct 2026. No voicemail box.",
         "research": "2026-08: new STEM building opening Jan 2027."
-      }
+      },
+      "split": "dev"
     },
     {
       "id": "callcard-saratoga",
@@ -357,10 +487,504 @@
         "city": "Saratoga",
         "industry": "Assisted living and memory care",
         "employees": "95",
-        "contact": { "name": "Linda Cho", "title": "Executive Director" },
+        "contact": {
+          "name": "Linda Cho",
+          "title": "Executive Director"
+        },
         "crmNotes": "2024-11: voicemail about print, no callback.",
         "research": "2026-07-29: ransomware at sister facility (same parent, Oakview Senior Communities). Parent reviewing security at all locations; regional IT lead is Marcus Bell."
-      }
+      },
+      "split": "dev"
+    },
+    {
+      "id": "signal-alviso-cold",
+      "type": "signal",
+      "title": "Alviso Cold Storage: new IT director",
+      "account": {
+        "company": "Alviso Cold Storage",
+        "city": "San Jose",
+        "industry": "Refrigerated warehousing for food distributors",
+        "employees": "110",
+        "contact": {
+          "name": "Hector Ruiz",
+          "title": "Director of IT"
+        },
+        "crmNotes": "2025-06: quoted managed print, lost on price.",
+        "research": "2026-08-25 LinkedIn: Hector Ruiz joined as Director of IT, previously at a regional grocery chain. Prior IT lead left in July."
+      },
+      "gold": {
+        "signalStatus": "HARD SIGNAL"
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "signal-cupertino-dental",
+      "type": "signal",
+      "title": "Cupertino Family Dental: HQ move announced",
+      "account": {
+        "company": "Cupertino Family Dental",
+        "city": "Cupertino",
+        "industry": "Dental practice, 2 offices",
+        "employees": "42",
+        "contact": {
+          "name": "Nina Park",
+          "title": "Practice Administrator"
+        },
+        "crmNotes": "Net-new. No history.",
+        "research": "2026-09-30 practice newsletter: main office moving to a larger space on Stevens Creek Blvd in January 2027, 'new building, new phones, new everything'."
+      },
+      "gold": {
+        "signalStatus": "HARD SIGNAL"
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "signal-los-gatos-wealth",
+      "type": "signal",
+      "title": "Los Gatos Wealth: hiring advisors",
+      "account": {
+        "company": "Los Gatos Wealth Partners",
+        "city": "Los Gatos",
+        "industry": "Independent financial advisory firm",
+        "employees": "26",
+        "contact": {
+          "name": "Claire Dunn",
+          "title": "Chief Operating Officer"
+        },
+        "crmNotes": "Net-new.",
+        "research": "2026-09-12 job postings: two Associate Financial Advisor roles. 2026-10 industry article (not about the firm): SEC stepping up cybersecurity exams for small advisers."
+      },
+      "gold": {
+        "signalStatus": "SOFT SIGNAL"
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "signal-milpitas-plastics",
+      "type": "signal",
+      "title": "Milpitas Plastics: moved last November",
+      "account": {
+        "company": "Milpitas Molded Plastics",
+        "city": "Milpitas",
+        "industry": "Injection molding for consumer electronics",
+        "employees": "180",
+        "contact": {
+          "name": "Steve Kowalski",
+          "title": "Plant Manager"
+        },
+        "crmNotes": "2025-08: Steve said call after the move.",
+        "research": "2025-11-04 press release: moved into a new 90,000 sq ft plant in Milpitas. No news, postings or changes found since then."
+      },
+      "gold": {
+        "signalStatus": "NO RECENT SIGNAL"
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "signal-evergreen-clinic",
+      "type": "signal",
+      "title": "Evergreen Pediatrics: quote went dark",
+      "account": {
+        "company": "Evergreen Pediatrics",
+        "city": "San Jose",
+        "industry": "Pediatric clinic",
+        "employees": "34",
+        "contact": {
+          "name": "Dr. Amy Lin",
+          "title": "Managing Partner"
+        },
+        "crmNotes": "2026-05-14: sent a quote for cameras and access control. No reply since. Amy said 'Q4 might work better'.",
+        "research": "Website unchanged. No news or postings in the last 12 months."
+      },
+      "gold": {
+        "signalStatus": "NO RECENT SIGNAL"
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "signal-sunnyvale-robotics",
+      "type": "signal",
+      "title": "Sunnyvale Robotics: 'we're growing' page",
+      "account": {
+        "company": "Brightpath Robotics",
+        "city": "Sunnyvale",
+        "industry": "Warehouse automation startup",
+        "employees": "55",
+        "contact": {
+          "name": "Jordan Ellis",
+          "title": "Head of Operations"
+        },
+        "crmNotes": "Net-new.",
+        "research": "Undated careers page: 'we're growing fast and building our team'. 2026-09 LinkedIn: three new sales hires. No funding, move or IT news found."
+      },
+      "gold": {
+        "signalStatus": "SOFT SIGNAL"
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "debrief-alviso-voicemail",
+      "type": "debrief",
+      "title": "Alviso Cold Storage: left a voicemail",
+      "account": {
+        "company": "Alviso Cold Storage",
+        "city": "San Jose",
+        "industry": "Refrigerated warehousing",
+        "employees": "110",
+        "contact": {
+          "name": "Hector Ruiz",
+          "title": "Director of IT"
+        },
+        "crmNotes": "2025-06: lost print quote on price.",
+        "research": "2026-08: new Director of IT."
+      },
+      "callNotes": "9:40 dialed hector direct. went to vm. left 30 sec vm, mentioned his new role + offered to share what other cold storage sites do for after hours monitoring. callback # left. will email too.",
+      "gold": {
+        "outcome": "voicemail",
+        "meetingAsked": false,
+        "meetingBooked": false
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "debrief-cupertino-wrong",
+      "type": "debrief",
+      "title": "Cupertino Family Dental: wrong person",
+      "account": {
+        "company": "Cupertino Family Dental",
+        "city": "Cupertino",
+        "industry": "Dental practice",
+        "employees": "42",
+        "contact": {
+          "name": "Nina Park",
+          "title": "Practice Administrator"
+        },
+        "crmNotes": "Net-new.",
+        "research": "2026-09: moving main office Jan 2027."
+      },
+      "callNotes": "called the # from the newsletter. turned out to be the dental lab they send crowns to, not the practice. guy said he has no idea who runs the office. need the practice main line.",
+      "gold": {
+        "outcome": "wrong_contact",
+        "meetingAsked": false,
+        "meetingBooked": false
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "debrief-milpitas-staff",
+      "type": "debrief",
+      "title": "Milpitas Plastics: shop floor picked up",
+      "account": {
+        "company": "Milpitas Molded Plastics",
+        "city": "Milpitas",
+        "industry": "Injection molding",
+        "employees": "180",
+        "contact": {
+          "name": "Steve Kowalski",
+          "title": "Plant Manager"
+        },
+        "crmNotes": "2025-08: call after the move.",
+        "research": "2025-11: moved plant."
+      },
+      "callNotes": "line rang to the shop floor, a machine operator (Luis) picked up. said steve is usually in the office upstairs early mornings, before 8. didnt know anything about IT. not a receptionist, just whoever was near the phone.",
+      "gold": {
+        "outcome": "general_staff",
+        "meetingAsked": false,
+        "meetingBooked": false
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "debrief-evergreen-booked",
+      "type": "debrief",
+      "title": "Evergreen Pediatrics: walkthrough booked",
+      "account": {
+        "company": "Evergreen Pediatrics",
+        "city": "San Jose",
+        "industry": "Pediatric clinic",
+        "employees": "34",
+        "contact": {
+          "name": "Dr. Amy Lin",
+          "title": "Managing Partner"
+        },
+        "crmNotes": "2026-05: camera + access quote, no reply.",
+        "research": "No news."
+      },
+      "callNotes": "amy picked up between patients. said the quote was too big for now but a parent tailgated through the staff door last week and it scared everyone. asked if i could do 20 min on site to look at just the staff entrance. she said friday the 24th at 12:30, lunch break.",
+      "gold": {
+        "outcome": "meeting_booked",
+        "meetingAsked": true,
+        "meetingBooked": true
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "debrief-los-gatos-no",
+      "type": "debrief",
+      "title": "Los Gatos Wealth: declined after the ask",
+      "account": {
+        "company": "Los Gatos Wealth Partners",
+        "city": "Los Gatos",
+        "industry": "Financial advisory",
+        "employees": "26",
+        "contact": {
+          "name": "Claire Dunn",
+          "title": "COO"
+        },
+        "crmNotes": "Net-new.",
+        "research": "2026-09: hiring advisors."
+      },
+      "callNotes": "got claire. asked about how theyre prepping for SEC cyber exams. she said their custodian + a compliance consultant cover it and theyre happy. i asked for 15 min anyway to compare notes, she said no thanks, not a fit right now. friendly.",
+      "gold": {
+        "outcome": "not_interested",
+        "meetingAsked": true,
+        "meetingBooked": false
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "debrief-brightpath-board",
+      "type": "debrief",
+      "title": "Brightpath Robotics: after the board meeting",
+      "account": {
+        "company": "Brightpath Robotics",
+        "city": "Sunnyvale",
+        "industry": "Warehouse automation startup",
+        "employees": "55",
+        "contact": {
+          "name": "Jordan Ellis",
+          "title": "Head of Operations"
+        },
+        "crmNotes": "Net-new.",
+        "research": "Growing team."
+      },
+      "callNotes": "jordan answered. they're on google workspace + a part time IT contractor, contractor is leaving end of year. interested in managed IT. asked for 20 min next week, he said budget gets set at the board meeting nov 3, call him nov 5 and we'll pick a time.",
+      "gold": {
+        "outcome": "follow_up_required",
+        "meetingAsked": true,
+        "meetingBooked": false
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "email-alviso",
+      "type": "email",
+      "title": "Alviso Cold Storage: new IT director",
+      "account": {
+        "company": "Alviso Cold Storage",
+        "city": "San Jose",
+        "industry": "Refrigerated warehousing for food distributors",
+        "employees": "110",
+        "contact": {
+          "name": "Hector Ruiz",
+          "title": "Director of IT"
+        },
+        "crmNotes": "2025-06: lost a print quote on price.",
+        "research": "2026-08-25: Hector joined as Director of IT; prior IT lead left in July."
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "email-cupertino-dental",
+      "type": "email",
+      "title": "Cupertino Family Dental: phones for the move",
+      "account": {
+        "company": "Cupertino Family Dental",
+        "city": "Cupertino",
+        "industry": "Dental practice, 2 offices",
+        "employees": "42",
+        "contact": {
+          "name": "Nina Park",
+          "title": "Practice Administrator"
+        },
+        "crmNotes": "Net-new.",
+        "research": "2026-09-30: main office moving to a larger space in January 2027, 'new building, new phones, new everything'."
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "email-evergreen",
+      "type": "email",
+      "title": "Evergreen Pediatrics: reopen the quote",
+      "account": {
+        "company": "Evergreen Pediatrics",
+        "city": "San Jose",
+        "industry": "Pediatric clinic",
+        "employees": "34",
+        "contact": {
+          "name": "Dr. Amy Lin",
+          "title": "Managing Partner"
+        },
+        "crmNotes": "2026-05-14: camera and access-control quote, no reply. Amy said 'Q4 might work better'.",
+        "research": "No news."
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "email-milpitas-plastics",
+      "type": "email",
+      "title": "Milpitas Plastics: a year in the new plant",
+      "account": {
+        "company": "Milpitas Molded Plastics",
+        "city": "Milpitas",
+        "industry": "Injection molding for consumer electronics",
+        "employees": "180",
+        "contact": {
+          "name": "Steve Kowalski",
+          "title": "Plant Manager"
+        },
+        "crmNotes": "2025-08: Steve said call after the move.",
+        "research": "2025-11: moved into a new plant. Nothing since."
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "email-los-gatos-wealth",
+      "type": "email",
+      "title": "Los Gatos Wealth: question-first",
+      "account": {
+        "company": "Los Gatos Wealth Partners",
+        "city": "Los Gatos",
+        "industry": "Independent financial advisory firm",
+        "employees": "26",
+        "contact": {
+          "name": "Claire Dunn",
+          "title": "Chief Operating Officer"
+        },
+        "crmNotes": "Net-new.",
+        "research": "2026-09: hiring two associate advisors. Industry: SEC focus on cyber at small advisers."
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "email-brightpath",
+      "type": "email",
+      "title": "Brightpath Robotics: IT contractor leaving",
+      "account": {
+        "company": "Brightpath Robotics",
+        "city": "Sunnyvale",
+        "industry": "Warehouse automation startup",
+        "employees": "55",
+        "contact": {
+          "name": "Jordan Ellis",
+          "title": "Head of Operations"
+        },
+        "crmNotes": "2026-10 call: part-time IT contractor leaves end of year; budget set at Nov 3 board meeting.",
+        "research": "No news."
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "callcard-alviso",
+      "type": "callcard",
+      "title": "Alviso Cold Storage: new director, cold call",
+      "account": {
+        "company": "Alviso Cold Storage",
+        "city": "San Jose",
+        "industry": "Refrigerated warehousing for food distributors",
+        "employees": "110",
+        "contact": {
+          "name": "Hector Ruiz",
+          "title": "Director of IT"
+        },
+        "crmNotes": "2025-06: lost a print quote on price. 2026-10: voicemail left, no callback.",
+        "research": "2026-08-25: Hector joined as Director of IT from a regional grocery chain."
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "callcard-cupertino-dental",
+      "type": "callcard",
+      "title": "Cupertino Family Dental: the move",
+      "account": {
+        "company": "Cupertino Family Dental",
+        "city": "Cupertino",
+        "industry": "Dental practice, 2 offices",
+        "employees": "42",
+        "contact": {
+          "name": "Nina Park",
+          "title": "Practice Administrator"
+        },
+        "crmNotes": "2026-10: first number tried was their dental lab (wrong contact).",
+        "research": "2026-09-30: moving main office in January 2027."
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "callcard-milpitas-plastics",
+      "type": "callcard",
+      "title": "Milpitas Plastics: catch Steve early",
+      "account": {
+        "company": "Milpitas Molded Plastics",
+        "city": "Milpitas",
+        "industry": "Injection molding for consumer electronics",
+        "employees": "180",
+        "contact": {
+          "name": "Steve Kowalski",
+          "title": "Plant Manager"
+        },
+        "crmNotes": "2025-08: 'call after the move'. 2026-10: shop floor said Steve is upstairs before 8am.",
+        "research": "2025-11: new plant. Nothing since."
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "callcard-los-gatos-wealth",
+      "type": "callcard",
+      "title": "Los Gatos Wealth: different angle",
+      "account": {
+        "company": "Los Gatos Wealth Partners",
+        "city": "Los Gatos",
+        "industry": "Independent financial advisory firm",
+        "employees": "26",
+        "contact": {
+          "name": "Claire Dunn",
+          "title": "Chief Operating Officer"
+        },
+        "crmNotes": "2026-10: Claire declined a meeting; custodian and compliance consultant cover cyber.",
+        "research": "2026-09: hiring two associate advisors."
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "callcard-brightpath",
+      "type": "callcard",
+      "title": "Brightpath Robotics: the Nov 5 callback",
+      "account": {
+        "company": "Brightpath Robotics",
+        "city": "Sunnyvale",
+        "industry": "Warehouse automation startup",
+        "employees": "55",
+        "contact": {
+          "name": "Jordan Ellis",
+          "title": "Head of Operations"
+        },
+        "crmNotes": "2026-10: contractor leaving end of year; call Nov 5 after the board sets budget.",
+        "research": "Three new sales hires in Sept."
+      },
+      "split": "holdout"
+    },
+    {
+      "id": "callcard-evergreen",
+      "type": "callcard",
+      "title": "Evergreen Pediatrics: before the walkthrough",
+      "account": {
+        "company": "Evergreen Pediatrics",
+        "city": "San Jose",
+        "industry": "Pediatric clinic",
+        "employees": "34",
+        "contact": {
+          "name": "Dr. Amy Lin",
+          "title": "Managing Partner"
+        },
+        "crmNotes": "2026-05: quote too big. 2026-10: tailgating incident at staff door; walkthrough booked Fri the 24th 12:30.",
+        "research": "No news."
+      },
+      "split": "holdout"
     }
-  ]
+  ],
+  "splits": {
+    "dev": "The original 24 tasks. Bakeoff picks a model per job from these.",
+    "holdout": "24 tasks written on 2026-10-17 before any model answered them. Only used to check a decision already made on dev. Never tune prompts, checks or picks on these."
+  }
 }

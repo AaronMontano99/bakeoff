@@ -81,6 +81,8 @@ export interface Task {
   account: Account;
   /** debrief only: the rep's raw after-call notes. */
   callNotes?: string;
+  /** dev = where picks are made; holdout = only used to check a pick already made. */
+  split?: 'dev' | 'holdout';
   /** Ground truth for tasks that have one right answer. */
   gold?: {
     signalStatus?: 'HARD SIGNAL' | 'SOFT SIGNAL' | 'NO RECENT SIGNAL';

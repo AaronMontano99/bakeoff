@@ -143,7 +143,8 @@
       "apiKeyEnv": "GROQ_API_KEY",
       "jsonMode": true,
       "pricing": { "inputPerMTok": null, "outputPerMTok": null, "source": "groq.com/pricing" },
-      "enabled": false
+      "enabled": true,
+      "notes": "Waiting on a GROQ_API_KEY in .env.local. Enter the price from groq.com/pricing and check the model ID before running."
     }
   ]
 }

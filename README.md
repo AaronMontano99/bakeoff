@@ -23,7 +23,7 @@ I used a real workload instead of made-up prompts because that's where the inter
 
 A job a rep runs 40 times a day has different needs than the hardest job of the day. Measuring them separately is the whole point.
 
-The 24 tasks use fictional accounts, so no customer data leaves my machine.
+The 48 tasks use fictional accounts, so no customer data leaves my machine. 24 are "dev" tasks where Bakeoff makes its picks, and 24 are held-out tasks it only uses to check those picks (more on that below).
 
 ## What I wanted to understand, and what I found
 
@@ -57,6 +57,38 @@ Four tasks (one per job) on the three models that need no API key:
 
 Four tasks only shows big differences. A full 24-task run with hosted providers is next.
 
+## Update 1 (Oct 17 2026): from "which model looks best" to "prove the pick"
+
+### Why I changed direction
+
+I read "How to Be More Ambitious: A Tutorial for Humans with Models" by Felix Rieseberg (Oct 13 2026) and it named something I was doing wrong across all my projects: I was building features, not outcomes. Bakeoff's first version could rank models on a handful of tasks and print a routing plan. That looks like an answer, but it isn't one. With four tasks, "Haiku matched Sonnet" could easily be luck, and nothing in the tool would tell you.
+
+The question a buyer actually needs answered isn't "which model scored highest?" It's **"if I route my traffic this way, will it still hold up on requests nobody has seen yet, and what does it save me?"** So this update makes Bakeoff take responsibility for that result, and gives it a way to be wrong out loud.
+
+Three ideas from the article shaped it:
+
+- **Go up a level.** The outcome is a routing decision someone could defend to their boss, not a leaderboard.
+- **Use the methods a professional would.** Held-out data, confidence intervals and a pre-declared pass/fail rule, instead of averages and a gut check.
+- **Don't let the model grade itself.** The verdict has to hold on the deterministic checks alone, the part of the score no LLM touches.
+
+### What I added
+
+- **24 new held-out tasks** (`split: "holdout"` in `tasks.json`), written before any model answered them, with the same balance of right answers as the dev set. They include harder cases: news older than six months, a wrong number, a voicemail, a meeting asked for and declined. Short runs (`--per-type 6` or less) only ever touch dev tasks.
+- **A decision engine** (`src/core/decide.ts`), in four steps:
+  1. **Pick on dev only.** For each job, the cheapest model that clears the quality bar, the latency budget and a 95% success rate. A pick is *confident* only if the low end of a bootstrap interval clears the bar, not just the average. *Tentative* picks are allowed but flagged.
+  2. **Freeze it.** The picks get a fingerprint, so if a later report shows a different one, the decision changed.
+  3. **Test it on holdout.** The frozen picks against "use the best single model for everything", paired task by task and weighted by how much traffic each job gets.
+  4. **Pass or fail, decided in advance.** Pass only if routing costs less *and* a quality drop bigger than 5 points is ruled out, on the composite score and on the deterministic checks alone.
+- **`npm run bakeoff -- decide [run-id]`** writes the whole thing to `data/reports/decision-<run>.md`, and every run has a new **Decision** tab in the dashboard.
+- 10 new tests, including one where a model looks great on dev and collapses on holdout, to make sure the engine actually catches that.
+
+### What I learned already
+
+- **My deterministic checks are too easy.** Both Claude models score 100 on them, so the LLM judge (Haiku, grading its own family) is what separates them. That's exactly the weak spot the article warns about. Harder checks and more human grading are next.
+- **Nothing meets a 4-second budget for signal checks through Claude Code**, because it starts a new process for every request. That's the job a fast hosted open model should win, which is why the next step is a hosted provider.
+
+The full 48-task results go here once the run finishes.
+
 ## Tour
 
 | | |
@@ -75,7 +107,7 @@ Every run produces a one-page brief you can print or send:
 I built Bakeoff with Claude Code. My part was the questions, the workload, the measurement design, the decisions about what counts as fair, and reading every result to make sure I could explain it. Building it with an AI coding tool is itself part of what I'm learning: how to turn a question into a working system and then check that the system tells the truth.
 
 ```
-workloads/scout-sdr/tasks.json   24 tasks on fictional accounts, with right answers where a job has one
+workloads/scout-sdr/tasks.json   48 tasks on fictional accounts (24 dev, 24 holdout), with right answers where a job has one
 config/targets.json              every model: provider, deployment type, prices
 
 src/core/
@@ -84,6 +116,7 @@ src/core/
                  one for the Claude API (streaming, prompt caching, effort), one for the Claude Code CLI
   runner.ts      warm-up → quality pass (one lane per model) → load test (one level at a time); judging runs alongside
   evals/         deterministic checks + LLM judge
+  decide.ts      dev picks → frozen fingerprint → holdout test against the best single model → pass/fail
   analysis.ts    percentiles, cost vs quality frontier, load curves, routing, dedicated break-even, judge agreement
   db.ts          one SQLite file shared by the web app and the CLI
 
@@ -119,7 +152,8 @@ npm run bakeoff -- targets                   # which models are ready
 npm run bakeoff -- run --per-type 2          # every ready model, 2 tasks per job
 npm run bakeoff -- run --concurrency 1,4,8   # add a load test
 npm run bakeoff -- report                    # latest run: table + business case
-npm test                                     # 21 tests
+npm run bakeoff -- decide                    # pick on dev, prove it on holdout
+npm test                                     # 31 tests
 ```
 
 ## What these numbers don't prove
@@ -127,7 +161,7 @@ npm test                                     # 21 tests
 Being honest about the limits was part of the exercise:
 
 - One laptop, one network, one moment. Hosted latency changes with region, load and model version.
-- 24 tasks shows large gaps, not small ones.
+- 48 tasks (6 dev and 6 holdout per job) shows large gaps, not small ones. The intervals in the decision report say how large.
 - A Claude judge grading Claude answers may favor its own family. That's why the human-agreement check exists.
 - Claude Code timings include starting a process per request, so they aren't API latency.
 - Prices are list prices on the date in the config.
@@ -136,7 +170,10 @@ The in-app Method page covers how every number is calculated.
 
 ## What's next
 
-- Run hosted inference providers (Groq, Fireworks, OpenRouter, the Claude API with and without caching) on all 24 tasks.
+> **Waiting on me: a Groq API key.** Get one at console.groq.com, add `GROQ_API_KEY=...` to `.env.local`, enter Groq's current price for the model in `config/targets.json` (and check the model ID is still current), then run `npm run bakeoff -- run --per-type 12` and `npm run bakeoff -- decide`. That's the first real hosted provider, and the one most likely to win the signal-check job.
+
+- Run hosted inference providers (Groq first, then Fireworks, OpenRouter, the Claude API with and without caching) on all 48 tasks, and see whether routing to them passes the holdout test.
+- Harder deterministic checks, so the verdict depends less on an LLM judge.
 - A dedicated GPU deployment, with a measured break-even against per-token pricing.
 - The same open model served different ways (quantized, with speculative decoding) to separate the model from the serving stack.
 

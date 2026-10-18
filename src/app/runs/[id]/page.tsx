@@ -1,6 +1,6 @@
 'use client';
 
-import { Activity, ArrowLeft, BarChart3, FileText, MessageSquareText, Radio, Square, Timer, Trash2, Wallet } from 'lucide-react';
+import { Activity, ArrowLeft, BarChart3, FileText, MessageSquareText, Radio, Square, Timer, Trash2, Scale, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { defaultCaseInputs, type CaseInputs } from '@/core/analysis';
 import { StatusBadge } from '@/components/page';
 import { CaseTab } from '@/components/run/case-tab';
+import { DecisionTab } from '@/components/run/decision-tab';
 import { LatencyTab } from '@/components/run/latency-tab';
 import { LiveTab } from '@/components/run/live-tab';
 import { OutputsTab } from '@/components/run/outputs-tab';
@@ -19,7 +20,7 @@ import type { TargetWithStatus } from '@/lib/types-client';
 import { useJson } from '@/lib/use-json';
 import { useRunLive } from '@/lib/use-run-live';
 
-type Tab = 'live' | 'overview' | 'latency' | 'outputs' | 'case';
+type Tab = 'live' | 'overview' | 'latency' | 'outputs' | 'case' | 'decision';
 const ACTIVE = ['queued', 'running', 'judging'];
 
 export default function RunPage() {
@@ -168,6 +169,7 @@ function RunView() {
             { value: 'latency', label: 'Latency', icon: <Timer className="size-3.5" /> },
             { value: 'outputs', label: 'Outputs', icon: <MessageSquareText className="size-3.5" />, count: quality.length || undefined },
             { value: 'case', label: 'Business case', icon: <Wallet className="size-3.5" /> },
+            { value: 'decision', label: 'Decision', icon: <Scale className="size-3.5" /> },
           ]}
         />
       </div>
@@ -183,6 +185,8 @@ function RunView() {
           <LatencyTab results={results} model={model} />
         ) : tab === 'outputs' ? (
           <OutputsTab run={run} results={results} setResults={setResults} model={model} />
+        ) : tab === 'decision' ? (
+          <DecisionTab results={results} model={model} inputs={inputs} targets={targets ?? []} />
         ) : (
           <CaseTab runId={run.id} model={model} inputs={inputs} setInputs={setInputs} targets={targets ?? []} />
         )}
