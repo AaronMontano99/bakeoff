@@ -51,7 +51,7 @@ Four tasks (one per job) on the three models that need no API key:
 | Claude Sonnet · Claude Code | 91 | 4.0s | 9.6s | $0.0065 | 73% |
 | Llama 3.2 3B · my laptop | 61 | 26.0s | 250s | $0 | n/a |
 
-- **Haiku matched Sonnet on quality at about an eighth of the cost.** Routing debriefs, emails and call cards to Haiku comes to about $11/month for a 10-rep team.
+- **Haiku matched Sonnet on quality at about an eighth of the cost.** Routing debriefs, emails and call cards to Haiku comes to about $11/month for a 10-rep team. *(Update: this didn't hold up on the full 48 tasks. See Update 1 above.)*
 - **No model met the 4-second budget for signal checks.** Claude Code starts a new process for every request, which eats most of that budget. This is the job where a fast open model on a hosted inference provider should win, and it's what I'm testing next.
 - **Free and local isn't the same as good enough.** The 3B model scored 46-63 on the writing and extraction jobs.
 
@@ -87,7 +87,20 @@ Three ideas from the article shaped it:
 - **My deterministic checks are too easy.** Both Claude models score 100 on them, so the LLM judge (Haiku, grading its own family) is what separates them. That's exactly the weak spot the article warns about. Harder checks and more human grading are next.
 - **Nothing meets a 4-second budget for signal checks through Claude Code**, because it starts a new process for every request. That's the job a fast hosted open model should win, which is why the next step is a hosted provider.
 
-The full 48-task results go here once the run finishes.
+### The first full result (Oct 18 2026): it overturned my own headline
+
+The quick 4-task check below said Haiku matched Sonnet at an eighth of the cost. On all 48 tasks, with the decision engine asking for proof, that didn't survive:
+
+| Job | Sonnet (dev) | Haiku (dev) | What the engine decided |
+|---|---|---|---|
+| Signal check | 94 (90-98) | 83 (79-88) | No pick: neither meets the 4s budget through Claude Code |
+| Call debrief | 94 (90-98) | 79 (67-92) | Sonnet. Haiku is under the bar |
+| Cold email | 85 (81-88) | 82 (77-88) | Sonnet. Haiku's *average* clears 80, but the low end of its interval doesn't |
+| Call card | 88 | 73 (66-80) | Sonnet |
+
+Quality 0-100 on 6 dev tasks per job, with 90% intervals. The local Llama 3.2 3B scored 45-54 everywhere.
+
+**Verdict: no change. Sonnet for every job it can do, about $138/month for a 10-rep team.** The frozen picks held on the 24 holdout tasks (83 on each job). The old business case would have routed cold email to Haiku on a 3-point average gap; the interval says that gap could easily be bigger. That's the difference between a feature that prints a number and a system that has to defend it. Full report: [`data/reports/decision-2026-10-18-741c3a.md`](data/reports/decision-2026-10-18-741c3a.md).
 
 ## Tour
 
