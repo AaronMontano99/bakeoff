@@ -192,4 +192,6 @@ The in-app Method page covers how every number is calculated.
 
 ## Credits
 
-The UI is built with [shadcn/ui](https://ui.shadcn.com)-style components, [cmdk](https://cmdk.paco.me), [Sonner](https://sonner.emilkowal.ski), [Lucide](https://lucide.dev) icons, [Motion](https://motion.dev) and the [Geist](https://vercel.com/font) typeface. Charts are hand-built SVG using a colorblind-safe palette.
+The UI is built with [shadcn/ui](https://ui.shadcn.com)-style components, [cmdk](https://cmdk.paco.me), [Sonner](https://sonner.emilkowal.ski), [Lucide](https://lucide.dev) icons, [Motion](https://motion.dev) and open-licensed type from Google Fonts (Outfit, Figtree, Fredoka, Nunito Sans, Fraunces). Standard charts use [Recharts](https://recharts.org); the cost/quality frontier and the per-request strip plot are hand-built SVG, because a log axis with a $0 lane isn't something a chart library gives you. All of it uses a colorblind-safe palette.
+
+The clouds aren't stock art or AI image generation. `scripts/gen-sky.py` paints them locally out of thousands of shaded spheres, so they cost nothing and the same seed gives the same sky. The look comes in three directions (Cloud Nine is the default, plus Golden Hour and Cheese Dust): compare them on `/lab`, and fine-tune with Tweaks in the dock.

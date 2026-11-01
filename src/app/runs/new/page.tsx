@@ -164,9 +164,9 @@ function NewRun() {
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
-      <PageHeader eyebrow="New run" title="Set up a bake-off" description="Pick who competes and what they run. Every choice updates the estimate on the right." />
+      <PageHeader title="Set up a bake-off" description="Pick who competes and what they run. Every choice updates the estimate on the right." />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {(
@@ -182,10 +182,10 @@ function NewRun() {
                 onClick={() => (p.id === 'custom' ? setPreset('custom') : applyPreset(p.id))}
                 className={cx(
                   'rounded-2xl border p-3.5 text-left transition',
-                  preset === p.id ? 'border-forest-600 bg-sage-50 ring-1 ring-forest-600' : 'border-line bg-paper shadow-card hover:border-line-strong'
+                  preset === p.id ? 'border-accent bg-tint ring-1 ring-accent' : 'glass border-line shadow-card hover:border-line-strong'
                 )}
               >
-                <p.icon className={cx('size-4', preset === p.id ? 'text-forest-600' : 'text-ink-3')} />
+                <p.icon className={cx('size-4', preset === p.id ? 'text-accent-ink' : 'text-ink-3')} />
                 <div className="mt-2 text-[13.5px] font-semibold">{p.title}</div>
                 <div className="text-[12.5px] text-ink-3">{p.body}</div>
               </button>
@@ -193,11 +193,11 @@ function NewRun() {
           </div>
 
           <Section n={1} title="Targets" hint={targets ? `${chosen.length} selected · ${ready.length} ready` : undefined}
-            action={ready.length > 0 && <button className="text-[13px] font-medium text-forest-700 hover:text-forest-900" onClick={() => setSelected(selected.length === ready.length ? [] : ready.map((t) => t.id))}>{selected.length === ready.length ? 'Clear' : 'Select all ready'}</button>}>
+            action={ready.length > 0 && <button className="text-[13px] font-medium text-accent-ink hover:text-accent-ink" onClick={() => setSelected(selected.length === ready.length ? [] : ready.map((t) => t.id))}>{selected.length === ready.length ? 'Clear' : 'Select all ready'}</button>}>
             {loading && !targets ? (
-              <div className="grid gap-2.5 sm:grid-cols-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[92px]" />)}</div>
+              <div className="grid grid-cols-[minmax(0,1fr)] gap-2.5 sm:grid-cols-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[92px]" />)}</div>
             ) : (
-              <div className="grid gap-2.5 sm:grid-cols-2">
+              <div className="grid grid-cols-[minmax(0,1fr)] gap-2.5 sm:grid-cols-2">
                 {visible.map((t) => (
                   <TargetCard
                     key={t.id}
@@ -212,7 +212,7 @@ function NewRun() {
           </Section>
 
           <Section n={2} title="Workload" hint="Scout’s four AI jobs, on fictional accounts">
-            <div className="grid gap-2.5 sm:grid-cols-2">
+            <div className="grid grid-cols-[minmax(0,1fr)] gap-2.5 sm:grid-cols-2">
               {TASK_TYPE_ORDER.map((t) => {
                 const on = types.includes(t);
                 return (
@@ -222,7 +222,7 @@ function NewRun() {
                       markCustom();
                       setTypes((s) => (s.includes(t) ? s.filter((x) => x !== t) : TASK_TYPE_ORDER.filter((x) => x === t || s.includes(x))));
                     }}
-                    className={cx('flex gap-3 rounded-xl border p-3.5 text-left transition', on ? 'border-forest-600 bg-sage-50/60' : 'border-line hover:border-line-strong')}
+                    className={cx('flex gap-3 rounded-xl border p-3.5 text-left transition', on ? 'border-accent bg-tint/60' : 'border-line hover:border-line-strong')}
                   >
                     <Checkbox on={on} />
                     <div>
@@ -255,7 +255,7 @@ function NewRun() {
                           <button
                             key={c}
                             onClick={() => setLevels((l) => (l.includes(c) ? (l.length > 1 ? l.filter((x) => x !== c) : l) : [...l, c]))}
-                            className={cx('tabular h-9 w-11 rounded-[10px] border text-sm font-medium transition', levels.includes(c) ? 'border-forest-600 bg-forest-700 text-white' : 'border-line-strong bg-paper text-ink-2 hover:bg-mist')}
+                            className={cx('tabular h-9 w-11 rounded-[10px] border text-sm font-medium transition', levels.includes(c) ? 'border-accent bg-hero text-on-hero' : 'border-line-strong bg-paper text-ink-2 hover:bg-mist')}
                           >
                             {c}
                           </button>
@@ -292,7 +292,7 @@ function NewRun() {
         </div>
 
         {/* Summary */}
-        <div className="lg:sticky lg:top-6 lg:self-start">
+        <div className="lg:sticky lg:top-24 lg:self-start">
           <Card className="overflow-hidden">
             <div className="border-b border-line bg-mist/60 px-5 py-4">
               <label className="text-[12px] font-medium text-ink-3" htmlFor="run-name">Run name</label>
@@ -301,14 +301,14 @@ function NewRun() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={defaultName(preset, chosen.length)}
-                className="mt-1 h-9 w-full rounded-[10px] border border-line-strong bg-paper px-3 text-sm outline-none placeholder:text-ink-4 focus:border-forest-500 focus:shadow-[var(--ring)]"
+                className="mt-1 h-9 w-full rounded-[10px] border border-line bg-mist px-3 text-sm outline-none placeholder:text-ink-4 focus:border-accent focus:shadow-[var(--ring)]"
               />
             </div>
             <div className="space-y-3.5 px-5 py-4">
               <Row icon={<Cpu />} label="Targets" value={chosen.length ? String(chosen.length) : 'None'} />
               <div className="-mt-1 flex flex-wrap gap-1.5 pl-6">
                 {chosen.map((t) => (
-                  <span key={t.id} className="flex items-center gap-1 rounded-full bg-mist px-2 py-0.5 text-[11.5px] text-ink-2">
+                  <span key={t.id} className="flex items-center gap-1 rounded-full bg-mist px-2 py-0.5 text-[12px] text-ink-2">
                     <Swatch color={seriesColor(targets!.indexOf(t))} />
                     {t.label}
                   </span>
@@ -345,7 +345,7 @@ function NewRun() {
             </div>
           </Card>
           <p className="mt-3 px-1 text-[12.5px] leading-relaxed text-ink-4">
-            Same run from the terminal:<br /><code className="font-mono text-[11.5px] break-all text-ink-3">npm run bakeoff -- run --per-type {perType}{loadOn ? ` --concurrency ${levels.join(',')}` : ''}</code>
+            Same run from the terminal:<br /><code className="font-mono text-[12px] break-all text-ink-3">npm run bakeoff -- run --per-type {perType}{loadOn ? ` --concurrency ${levels.join(',')}` : ''}</code>
           </p>
         </div>
       </div>
@@ -362,7 +362,7 @@ function Section({ n, title, hint, action, children }: { n: number; title: strin
   return (
     <Card className="p-5">
       <div className="mb-4 flex items-center gap-3">
-        <span className="tabular grid size-6 place-items-center rounded-full bg-forest-800 text-[12px] font-semibold text-white">{n}</span>
+        <span className="tabular grid size-6 place-items-center rounded-full bg-hero text-[12px] font-semibold text-on-hero">{n}</span>
         <h2 className="text-[15px] font-semibold">{title}</h2>
         {hint && <span className="text-[13px] text-ink-3">{hint}</span>}
         {action && <span className="ml-auto">{action}</span>}
@@ -400,7 +400,7 @@ function Row({ icon, label, value, sub }: { icon: React.ReactNode; label: string
 
 function Checkbox({ on }: { on: boolean }) {
   return (
-    <span className={cx('mt-0.5 grid size-[18px] shrink-0 place-items-center rounded-[6px] border transition', on ? 'border-forest-600 bg-forest-600 text-white' : 'border-line-strong bg-paper')}>
+    <span className={cx('mt-0.5 grid size-[18px] shrink-0 place-items-center rounded-[6px] border transition', on ? 'border-accent bg-accent text-on-accent' : 'border-line-strong bg-paper')}>
       {on && <Check className="size-3" strokeWidth={3} />}
     </span>
   );
@@ -421,7 +421,7 @@ function TargetCard({ t, color, selected, onToggle }: { t: TargetWithStatus; col
         'group relative rounded-xl border p-3.5 transition',
         !isReady && 'cursor-not-allowed bg-mist/50',
         isReady && 'cursor-pointer',
-        selected ? 'border-forest-600 bg-sage-50/60 ring-1 ring-forest-600' : isReady ? 'border-line hover:border-line-strong' : 'border-line'
+        selected ? 'border-accent bg-tint/60 ring-1 ring-accent' : isReady ? 'border-line hover:border-line-strong' : 'border-line'
       )}
     >
       <div className="flex items-start gap-3">
@@ -432,12 +432,12 @@ function TargetCard({ t, color, selected, onToggle }: { t: TargetWithStatus; col
             <span className={cx('truncate text-[14px] font-medium', !isReady && 'text-ink-3')}>{t.label}</span>
           </div>
           <div className="mt-0.5 truncate text-[12px] text-ink-4">
-            {t.vendor} · <span className="font-mono text-[11.5px]">{t.model}</span>
+            {t.vendor} · <span className="font-mono text-[12px]">{t.model}</span>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <Badge tone={t.deployment === 'local' ? 'green' : t.deployment === 'subscription' ? 'info' : 'neutral'}>{t.deployment}</Badge>
             {isReady ? (
-              <span className="flex items-center gap-1 text-[12px] text-forest-700">
+              <span className="flex items-center gap-1 text-[12px] text-accent-ink">
                 <Dot /> {t.status.detail ?? 'Ready'}
               </span>
             ) : fix ? (
@@ -447,7 +447,7 @@ function TargetCard({ t, color, selected, onToggle }: { t: TargetWithStatus; col
                   void navigator.clipboard.writeText(`${fix}=`);
                   toast('Copied', { description: `Paste ${fix}=… into .env.local, then restart the dev server.` });
                 }}
-                className="flex items-center gap-1 rounded-md px-1 text-[12px] text-ink-3 hover:bg-paper hover:text-ink"
+                className="flex items-center gap-1 rounded-md px-1 text-[12px] text-ink-3 hover:bg-mist hover:text-ink"
               >
                 <Copy className="size-3" /> Needs {fix}
               </button>

@@ -80,12 +80,12 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
 export default function MethodPage() {
   return (
     <div className="mx-auto max-w-3xl px-5 py-8 sm:px-8">
-      <PageHeader eyebrow="Method" title="How the numbers are made" description="Everything Bakeoff measures, how, and where it stops being trustworthy." />
+      <PageHeader title="How the numbers are made" description="Everything Bakeoff measures, how, and where it stops being trustworthy." />
       <div className="space-y-4">
         {SECTIONS.map((s, i) => (
-          <section key={s.title} className="rounded-2xl border border-line bg-paper p-6 shadow-card">
+          <section key={s.title} className="glass rounded-2xl border border-line p-6 shadow-card">
             <div className="flex items-center gap-3">
-              <span className="tabular grid size-6 place-items-center rounded-full bg-sage-100 text-[12px] font-semibold text-forest-700">{i + 1}</span>
+              <span className="tabular grid size-6 place-items-center rounded-full bg-tint-2 text-[12px] font-semibold text-accent-ink">{i + 1}</span>
               <h2 className="text-[16px] font-semibold tracking-[-0.01em]">{s.title}</h2>
             </div>
             <div className="mt-3 space-y-2 text-[14px] leading-relaxed text-ink-2 [&_code]:rounded [&_code]:bg-mist [&_code]:px-1 [&_code]:font-mono [&_code]:text-[12.5px] [&_li]:relative [&_li]:pl-4 [&_li]:before:absolute [&_li]:before:top-[9px] [&_li]:before:left-0 [&_li]:before:size-1.5 [&_li]:before:rounded-full [&_li]:before:bg-forest-400 [&_ul]:space-y-2">

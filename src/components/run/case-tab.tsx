@@ -16,9 +16,9 @@ export function CaseTab({ runId, model, inputs, setInputs, targets }: { runId: s
   const totalVolume = bc.routes.reduce((a, r) => a + r.monthlyVolume, 0);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
       {/* Assumptions */}
-      <Card className="h-fit p-5 lg:sticky lg:top-4">
+      <Card className="h-fit p-5 lg:sticky lg:top-24">
         <div className="flex items-center justify-between">
           <h3 className="text-[15px] font-semibold">Assumptions</h3>
           <button onClick={() => setInputs(defaultCaseInputs())} className="flex items-center gap-1 text-[12.5px] text-ink-3 hover:text-ink">
@@ -34,7 +34,7 @@ export function CaseTab({ runId, model, inputs, setInputs, targets }: { runId: s
 
         <div className="mt-4">
           <div className="flex items-center justify-between text-[12.5px] font-medium text-ink-2">
-            Quality bar <span className="tabular text-forest-700">{Math.round(inputs.qualityBar * 100)}</span>
+            Quality bar <span className="tabular text-accent-ink">{Math.round(inputs.qualityBar * 100)}</span>
           </div>
           <input
             type="range"
@@ -43,7 +43,7 @@ export function CaseTab({ runId, model, inputs, setInputs, targets }: { runId: s
             step={0.01}
             value={inputs.qualityBar}
             onChange={(e) => setInputs((i) => ({ ...i, qualityBar: Number(e.target.value) }))}
-            className="mt-2 w-full accent-[#1c6446]"
+            className="mt-2 w-full accent-[var(--accent)]"
             aria-label="Quality bar"
           />
           <p className="text-[12px] text-ink-4">A job only routes to a model that scores at least this.</p>
@@ -67,8 +67,8 @@ export function CaseTab({ runId, model, inputs, setInputs, targets }: { runId: s
 
       <div className="min-w-0 space-y-6">
         <Card className="overflow-hidden">
-          <div className="bg-forest-800 px-6 py-5 text-white">
-            <div className="text-[12px] font-semibold tracking-wide text-forest-300 uppercase">Recommendation</div>
+          <div className="bg-hero px-6 py-5 text-on-hero">
+            <div className="text-[12px] font-semibold tracking-wide text-accent-ink uppercase">Recommendation</div>
             <p className="mt-1.5 text-[19px] leading-snug font-medium tracking-[-0.01em] text-balance">{bc.headline}</p>
           </div>
           <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-3">
@@ -77,7 +77,7 @@ export function CaseTab({ runId, model, inputs, setInputs, targets }: { runId: s
             <Stat label="Difference" value={bc.savingsPct == null ? '—' : `${Math.round(bc.savingsPct * 100)}%`} sub={bc.routedMonthly != null && bc.baselineMonthly != null ? `${fmt.usdShort(bc.baselineMonthly - bc.routedMonthly)} a month` : 'Needs prices on both sides'} />
           </div>
           {bc.gaps.length > 0 && (
-            <div className="mx-4 mb-4 space-y-1.5 rounded-xl border border-[#f1dcb2] bg-[#fdf6e9] p-3">
+            <div className="mx-4 mb-4 space-y-1.5 rounded-xl border border-warn/30 bg-warn-tint p-3">
               {bc.gaps.map((g) => (
                 <div key={g.taskType} className="flex flex-wrap items-start gap-2 text-[13px] text-warn sm:flex-nowrap">
                   <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
@@ -91,7 +91,7 @@ export function CaseTab({ runId, model, inputs, setInputs, targets }: { runId: s
                           ...(g.fix!.sloMs != null ? { sloMs: { ...i.sloMs, [g.taskType]: g.fix!.sloMs } } : {}),
                         }))
                       }
-                      className="shrink-0 rounded-lg border border-[#e7c98d] bg-paper px-2.5 py-1 text-[12.5px] font-medium text-[#7a4d0c] hover:bg-[#fffaf0]"
+                      className="shrink-0 rounded-lg border border-warn/30 bg-mist px-2.5 py-1 text-[12.5px] font-medium text-warn hover:bg-warn-tint"
                     >
                       {g.fix.label}
                     </button>
@@ -107,7 +107,7 @@ export function CaseTab({ runId, model, inputs, setInputs, targets }: { runId: s
             <CardHeader
               title={TASK_TYPES[r.taskType].label}
               subtitle={`${fmt.int(r.monthlyVolume)} requests/mo · p95 budget ${fmt.sec(inputs.sloMs[r.taskType], 0)} · ${TASK_TYPES[r.taskType].profile}`}
-              action={r.pick && <span className="flex items-center gap-1.5 rounded-full bg-sage-50 px-2.5 py-1 text-[12.5px] font-medium text-forest-800 ring-1 ring-sage-200"><Check className="size-3.5" /> {meta(r.pick.targetId).label}</span>}
+              action={r.pick && <span className="flex items-center gap-1.5 rounded-full bg-tint px-2.5 py-1 text-[12.5px] font-medium text-accent-ink ring-1 ring-tint-line"><Check className="size-3.5" /> {meta(r.pick.targetId).label}</span>}
             />
             <div className="overflow-x-auto scrollbar-thin">
               <table className="w-full min-w-[620px] text-[13px]">
@@ -125,7 +125,7 @@ export function CaseTab({ runId, model, inputs, setInputs, targets }: { runId: s
                   {[...r.options].sort((a, b) => Number(b.eligible) - Number(a.eligible) || (a.costPerRequest ?? 1e9) - (b.costPerRequest ?? 1e9)).map((o) => {
                     const picked = r.pick?.targetId === o.targetId;
                     return (
-                      <tr key={o.targetId} className={cx('border-b border-line last:border-b-0', picked && 'bg-sage-50/70')}>
+                      <tr key={o.targetId} className={cx('border-b border-line last:border-b-0', picked && 'bg-tint/70')}>
                         <td className="py-2.5 pl-5">
                           <span className="flex items-center gap-2 font-medium whitespace-nowrap">
                             <Swatch color={meta(o.targetId).color} />
@@ -138,7 +138,7 @@ export function CaseTab({ runId, model, inputs, setInputs, targets }: { runId: s
                         <td className="tabular px-3 text-right font-medium">{fmt.usd(o.monthlyCost)}</td>
                         <td className="pr-5 pl-3">
                           {picked ? (
-                            <span className="inline-flex items-center gap-1 text-forest-700"><Check className="size-3.5" /> Route here</span>
+                            <span className="inline-flex items-center gap-1 text-accent-ink"><Check className="size-3.5" /> Route here</span>
                           ) : o.eligible ? (
                             <span className="text-ink-3">Clears the bar, costs more</span>
                           ) : (
@@ -206,7 +206,7 @@ function CrossoverRow({ t, model, totalVolume }: { t: TargetWithStatus; model: R
         <span className="text-[12.5px] text-ink-4">{t.dedicated?.gpu}</span>
         <div className="ml-auto flex items-center gap-2">
           <label className="text-[12.5px] text-ink-3" htmlFor={`h-${t.id}`}>GPU $/hour</label>
-          <input id={`h-${t.id}`} value={hourly} onChange={(e) => setHourly(e.target.value.replace(/[^0-9.]/g, ''))} placeholder="e.g. from pricing page" className="tabular h-8 w-36 rounded-lg border border-line-strong px-2.5 text-[13px] outline-none focus:border-forest-500 focus:shadow-[var(--ring)]" />
+          <input id={`h-${t.id}`} value={hourly} onChange={(e) => setHourly(e.target.value.replace(/[^0-9.]/g, ''))} placeholder="e.g. from pricing page" className="tabular h-8 w-36 rounded-lg border border-line-strong px-2.5 text-[13px] outline-none focus:border-accent focus:shadow-[var(--ring)]" />
           <Button size="sm" onClick={save} loading={saving} disabled={hourly === (t.dedicated?.hourlyUsd?.toString() ?? '')}>Save</Button>
         </div>
       </div>
@@ -218,8 +218,8 @@ function CrossoverRow({ t, model, totalVolume }: { t: TargetWithStatus; model: R
           </p>
           <LineChart
             series={[
-              { id: 'serverless', label: 'Serverless (per token)', color: '#2a78d6', points: x.curve.map((p) => ({ x: p.volume, y: p.serverless })) },
-              { id: 'dedicated', label: 'Dedicated (per GPU-hour, 60% utilization)', color: '#eb6834', points: x.curve.map((p) => ({ x: p.volume, y: p.dedicated })), step: true },
+              { id: 'serverless', label: 'Serverless (per token)', color: 'var(--s1)', points: x.curve.map((p) => ({ x: p.volume, y: p.serverless })) },
+              { id: 'dedicated', label: 'Dedicated (per GPU-hour, 60% utilization)', color: 'var(--s2)', points: x.curve.map((p) => ({ x: p.volume, y: p.dedicated })), step: true },
             ]}
             xLabel="Requests per month →"
             yLabel="$ per month"
@@ -258,7 +258,7 @@ function Num({ label, value, onChange, min = 0, max = 100_000 }: { label: string
         min={min}
         max={max}
         onChange={(e) => onChange(Math.min(max, Math.max(min, Number(e.target.value) || min)))}
-        className="tabular mt-1 h-9 w-full rounded-[10px] border border-line-strong px-3 text-sm outline-none focus:border-forest-500 focus:shadow-[var(--ring)]"
+        className="tabular mt-1 h-9 w-full rounded-control border border-line px-3 text-sm outline-none focus:border-accent focus:shadow-[var(--ring)]"
       />
     </label>
   );
@@ -272,7 +272,7 @@ function SmallNum({ value, onChange, suffix }: { value: number; onChange: (v: nu
         value={value}
         min={0}
         onChange={(e) => onChange(Math.max(0, Number(e.target.value) || 0))}
-        className={cx('tabular h-8 w-full rounded-lg border border-line-strong pl-2 text-right text-[13px] outline-none focus:border-forest-500 focus:shadow-[var(--ring)]', suffix ? 'pr-5' : 'pr-2')}
+        className={cx('tabular h-8 w-full rounded-lg border border-line-strong pl-2 text-right text-[13px] outline-none focus:border-accent focus:shadow-[var(--ring)]', suffix ? 'pr-5' : 'pr-2')}
       />
       {suffix && <span className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-[12px] text-ink-4">{suffix}</span>}
     </div>

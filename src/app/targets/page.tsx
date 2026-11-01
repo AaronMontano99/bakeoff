@@ -31,7 +31,6 @@ export default function TargetsPage() {
   return (
     <div className="mx-auto max-w-5xl px-5 py-8 sm:px-8">
       <PageHeader
-        eyebrow="Targets"
         title="Who competes"
         description="Every model and provider the bake-off can run. Prices you enter here are written to config/targets.json so they’re versioned with the results."
         actions={<Button icon={<RefreshCw className={cx('size-3.5', checking && 'animate-spin')} />} onClick={recheck}>Re-check</Button>}
@@ -82,7 +81,7 @@ function TargetRow({ t, color, onSaved }: { t: TargetWithStatus; color: string; 
   };
 
   return (
-    <Card id={t.id} className={cx('scroll-mt-6 p-5 target:ring-2 target:ring-forest-500/40', !t.enabled && 'opacity-60')}>
+    <Card id={t.id} className={cx('scroll-mt-6 p-5 target:ring-2 target:ring-accent/40', !t.enabled && 'opacity-60')}>
       <div className="flex flex-col gap-4 md:flex-row md:items-start">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -95,14 +94,14 @@ function TargetRow({ t, color, onSaved }: { t: TargetWithStatus; color: string; 
           <div className="mt-1 font-mono text-[12px] text-ink-3">{t.model}</div>
           <div className="mt-2.5 flex items-center gap-2 text-[13px]">
             <Dot tone={ready ? 'green' : t.status.state === 'disabled' ? 'muted' : 'warn'} />
-            <span className={ready ? 'text-forest-700' : 'text-ink-3'}>{t.status.detail ?? t.status.state}</span>
+            <span className={ready ? 'text-accent-ink' : 'text-ink-3'}>{t.status.detail ?? t.status.state}</span>
             {t.status.state === 'missing-key' && t.apiKeyEnv && (
               <button
                 onClick={() => {
                   void navigator.clipboard.writeText(`${t.apiKeyEnv}=`);
                   toast('Copied', { description: `Paste into .env.local, add your key, restart the dev server.` });
                 }}
-                className="inline-flex items-center gap-1 rounded-md border border-line px-1.5 py-0.5 font-mono text-[11.5px] text-ink-2 hover:bg-mist"
+                className="inline-flex items-center gap-1 rounded-md border border-line px-1.5 py-0.5 font-mono text-[12px] text-ink-2 hover:bg-mist"
               >
                 <Copy className="size-3" /> {t.apiKeyEnv}=
               </button>
@@ -125,10 +124,10 @@ function TargetRow({ t, color, onSaved }: { t: TargetWithStatus; color: string; 
                 <PriceInput label="Output" value={outPrice} onChange={setOut} />
               </div>
               <div className="mt-2.5 flex items-center justify-between gap-2">
-                <span className="truncate text-[11.5px] text-ink-4" title={t.pricing.source}>
+                <span className="truncate text-[12px] text-ink-4" title={t.pricing.source}>
                   {t.pricing.verifiedOn ? `Checked ${t.pricing.verifiedOn}` : t.pricing.inputPerMTok == null ? 'Not entered yet' : ''}
                   {t.pricing.source && !t.pricing.source.includes(' ') ? (
-                    <a href={`https://${t.pricing.source}`} target="_blank" rel="noreferrer" className="ml-1 inline-flex items-center gap-0.5 text-forest-700 hover:underline">
+                    <a href={`https://${t.pricing.source}`} target="_blank" rel="noreferrer" className="ml-1 inline-flex items-center gap-0.5 text-accent-ink hover:underline">
                       {t.pricing.source} <ExternalLink className="size-3" />
                     </a>
                   ) : null}
@@ -137,7 +136,7 @@ function TargetRow({ t, color, onSaved }: { t: TargetWithStatus; color: string; 
                   {dirty ? 'Save' : 'Saved'}
                 </Button>
               </div>
-              {t.pricing.cacheReadPerMTok != null && <div className="tabular mt-1.5 text-[11.5px] text-ink-4">Cache read ${t.pricing.cacheReadPerMTok} · write ${t.pricing.cacheWritePerMTok}</div>}
+              {t.pricing.cacheReadPerMTok != null && <div className="tabular mt-1.5 text-[12px] text-ink-4">Cache read ${t.pricing.cacheReadPerMTok} · write ${t.pricing.cacheWritePerMTok}</div>}
             </>
           ) : (
             <p className="mt-1.5 text-[13px] leading-snug text-ink-2">{t.pricing.source}</p>
@@ -151,10 +150,10 @@ function TargetRow({ t, color, onSaved }: { t: TargetWithStatus; color: string; 
 function PriceInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <label className="block">
-      <span className="text-[11.5px] text-ink-4">{label}</span>
+      <span className="text-[12px] text-ink-4">{label}</span>
       <div className="relative mt-0.5">
         <span className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-[13px] text-ink-4">$</span>
-        <input value={value} onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ''))} placeholder="—" className="tabular h-8 w-full rounded-lg border border-line-strong bg-paper pr-2 pl-5 text-[13px] outline-none focus:border-forest-500 focus:shadow-[var(--ring)]" />
+        <input value={value} onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ''))} placeholder="—" className="tabular h-8 w-full rounded-lg border border-line-strong bg-paper pr-2 pl-5 text-[13px] outline-none focus:border-accent focus:shadow-[var(--ring)]" />
       </div>
     </label>
   );

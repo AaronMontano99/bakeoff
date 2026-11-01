@@ -45,13 +45,13 @@ export function OverviewTab({ run, results, model, inputs }: { run: RunRow; resu
     <div className="space-y-6">
       {findings.length > 0 && (
         <Card className="p-5">
-          <div className="flex items-center gap-2 text-[13px] font-semibold tracking-wide text-forest-700 uppercase">
+          <div className="flex items-center gap-2 text-[13px] font-semibold tracking-wide text-accent-ink uppercase">
             <Lightbulb className="size-4" /> What stands out
           </div>
           <ul className="mt-3 grid gap-x-8 gap-y-2.5 md:grid-cols-2">
             {findings.map((f, i) => (
               <li key={i} className="flex gap-2.5 text-[14px] leading-snug text-ink-2">
-                <span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-forest-500" />
+                <span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-accent" />
                 <span>{f}</span>
               </li>
             ))}
@@ -64,7 +64,7 @@ export function OverviewTab({ run, results, model, inputs }: { run: RunRow; resu
         <div className="overflow-x-auto scrollbar-thin">
           <table className="w-full min-w-[820px] text-[13.5px]">
             <thead>
-              <tr className="border-y border-line bg-mist/60 text-left text-[12px] text-ink-3">
+              <tr className="border-y border-line bg-mist text-left text-[12px] text-ink-3">
                 <th className="py-2.5 pr-3 pl-5 font-medium">Target</th>
                 {COLUMNS.map((c) => (
                   <th key={c.key} className="px-3 py-2.5 text-right font-medium" title={c.hint}>
@@ -88,7 +88,7 @@ export function OverviewTab({ run, results, model, inputs }: { run: RunRow; resu
                       <div className="flex items-center gap-2 font-medium">
                         <Swatch color={m.color} />
                         {m.label}
-                        {frontierIds.has(s.targetId) && <span className="rounded-full bg-sage-100 px-1.5 text-[10.5px] font-semibold text-forest-700" title="On the cost/quality frontier">FRONTIER</span>}
+                        {frontierIds.has(s.targetId) && <span className="rounded-full bg-tint-2 px-1.5 text-[12px] font-semibold text-accent-ink" title="On the cost/quality frontier">FRONTIER</span>}
                       </div>
                       <div className="mt-0.5 pl-[18px] text-[12px] text-ink-4">
                         {s.n} requests{s.okRate < 1 ? ` · ${Math.round((1 - s.okRate) * 100)}% failed` : ''}
@@ -110,7 +110,7 @@ export function OverviewTab({ run, results, model, inputs }: { run: RunRow; resu
 
       <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
         <Card className="min-w-0">
-          <CardHeader title="Cost vs quality" subtitle="Up and to the left wins. The green line is the frontier." />
+          <CardHeader title="Cost vs quality" subtitle="Up and to the left wins. The line is the frontier." />
           <div className="px-4 pb-4">
             <FrontierChart
               points={summaries.map((s) => ({
@@ -128,7 +128,7 @@ export function OverviewTab({ run, results, model, inputs }: { run: RunRow; resu
         </Card>
 
         <Card className="min-w-0">
-          <CardHeader title="Quality by job" subtitle="The right model depends on the job. Darker is better." />
+          <CardHeader title="Quality by job" subtitle="The right model depends on the job. Stronger color is better." />
           <div className="overflow-x-auto px-5 pb-5 scrollbar-thin">
             <table className="w-full border-separate border-spacing-[3px] text-[12.5px]">
               <thead>
@@ -152,7 +152,7 @@ export function OverviewTab({ run, results, model, inputs }: { run: RunRow; resu
                         <td
                           key={t}
                           className="tabular h-9 min-w-14 rounded-md text-center font-semibold"
-                          style={c ? { background: c.bg, color: c.fg } : { background: '#f6f8f6', color: '#9aa8a0' }}
+                          style={c ? { background: c.bg, color: c.fg } : { background: 'var(--mist)', color: 'var(--ink-4)' }}
                           title={`${meta(s.targetId).label} · ${TASK_TYPES[t].label}: ${fmt.score(q)} quality, p95 ${fmt.sec(s.byType[t]?.totalP95)}`}
                         >
                           {fmt.score(q)}

@@ -25,11 +25,10 @@ export default function WorkloadPage() {
   return (
     <div className="mx-auto max-w-5xl px-5 py-8 sm:px-8">
       <PageHeader
-        eyebrow="Workload"
         title="What every model runs"
         description={workload?.description ?? 'Loading…'}
         actions={
-          <button onClick={() => setShowPlaybook(true)} className="inline-flex h-9 items-center gap-2 rounded-[10px] border border-line-strong bg-paper px-3.5 text-sm font-medium shadow-card hover:bg-mist">
+          <button onClick={() => setShowPlaybook(true)} className="inline-flex h-9 items-center gap-2 rounded-control border border-line bg-mist px-3.5 text-sm font-medium shadow-card hover:bg-mist">
             <BookText className="size-4" /> Read the shared playbook
           </button>
         }
@@ -88,7 +87,7 @@ export default function WorkloadPage() {
               {open.gold?.meetingAsked != null && <Badge>asked {String(open.gold.meetingAsked)} · booked {String(open.gold.meetingBooked)}</Badge>}
             </div>
             <div>
-              <div className="mb-1 text-[11px] font-semibold tracking-wide text-ink-4 uppercase">User message (after the playbook)</div>
+              <div className="mb-1 text-[12px] font-semibold tracking-wide text-ink-4 uppercase">User message (after the playbook)</div>
               <pre className="rounded-xl bg-mist p-3.5 font-mono text-[12px] leading-relaxed whitespace-pre-wrap text-ink-2">{open.prompt.user}</pre>
             </div>
           </div>
@@ -103,9 +102,9 @@ function Drawer({ open, onClose, title, children }: { open: boolean; onClose: ()
     <AnimatePresence>
       {open && (
         <>
-          <motion.div className="fixed inset-0 z-40 bg-forest-950/30 backdrop-blur-[2px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+          <motion.div className="fixed inset-0 z-40 bg-scrim/30 backdrop-blur-[2px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
           <motion.aside
-            className="fixed inset-y-0 right-0 z-50 flex w-full max-w-xl flex-col bg-paper shadow-pop"
+            className="fixed inset-y-0 right-0 z-50 solid flex w-full max-w-xl flex-col shadow-pop"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}

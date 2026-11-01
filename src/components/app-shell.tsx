@@ -11,20 +11,23 @@ import {
   Keyboard,
   LayoutDashboard,
   ListChecks,
-  Menu,
   Play,
+  Plus,
   Search,
+  SlidersHorizontal,
+  SwatchBook,
   X,
   Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Toaster } from 'sonner';
+import { toast, Toaster } from 'sonner';
+import { ACCENTS, DIRECTIONS, HEADING_FONTS, useLook } from '@/lib/appearance';
 import { useJson } from '@/lib/use-json';
 import type { RunListItem, TargetWithStatus } from '@/lib/types-client';
 import { fmt } from '@/lib/format';
-import { cx, Dot, Kbd } from './ui';
+import { Button, cx, Dot, Kbd } from './ui';
 
 const NAV = [
   { href: '/', label: 'Overview', icon: LayoutDashboard, chord: 'o' },
@@ -48,10 +51,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [palette, setPalette] = useState(false);
   const [shortcuts, setShortcuts] = useState(false);
-  const [mobileNav, setMobileNav] = useState(false);
+  const [tweaks, setTweaks] = useState(false);
   const print = pathname.endsWith('/brief');
-
-  useEffect(() => setMobileNav(false), [pathname]);
 
   useEffect(() => {
     let chord: number | null = null;
@@ -89,114 +90,182 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <ShellCtx.Provider value={ctx}>
-      <div className="flex min-h-dvh bg-paper">
-        <Sidebar pathname={pathname} onSearch={() => setPalette(true)} onShortcuts={() => setShortcuts(true)} className="hidden lg:flex" />
-
-        <AnimatePresence>
-          {mobileNav && (
-            <>
-              <motion.div className="fixed inset-0 z-40 bg-forest-950/40 backdrop-blur-[2px] lg:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileNav(false)} />
-              <motion.div className="fixed inset-y-0 left-0 z-50 lg:hidden" initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: 'spring', stiffness: 400, damping: 40 }}>
-                <Sidebar pathname={pathname} onSearch={() => setPalette(true)} onShortcuts={() => setShortcuts(true)} className="flex h-full" />
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-
-        <div className="min-w-0 flex-1">
-          <div className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-paper/85 px-4 backdrop-blur lg:hidden">
-            <button onClick={() => setMobileNav(true)} className="grid size-9 place-items-center rounded-lg text-ink-2 hover:bg-mist" aria-label="Open menu">
-              <Menu className="size-5" />
-            </button>
-            <Logo />
-            <button onClick={() => setPalette(true)} className="grid size-9 place-items-center rounded-lg text-ink-2 hover:bg-mist" aria-label="Search">
-              <Search className="size-[18px]" />
-            </button>
-          </div>
-          <main>{children}</main>
-        </div>
-      </div>
+      <Sky />
+      <TopBar pathname={pathname} />
+      <main className="pb-32">{children}</main>
+      <Dock onSearch={() => setPalette(true)} onShortcuts={() => setShortcuts(true)} onTweaks={() => setTweaks((v) => !v)} tweaksOpen={tweaks} />
+      <Tweaks open={tweaks} onClose={() => setTweaks(false)} />
       <Palette open={palette} onClose={() => setPalette(false)} onShortcuts={() => setShortcuts(true)} />
       <Shortcuts open={shortcuts} onClose={() => setShortcuts(false)} />
-      <Toaster
-        position="bottom-right"
-        toastOptions={{ classNames: { toast: '!rounded-xl !border-line !shadow-lift !font-sans', title: '!text-ink !font-medium', description: '!text-ink-3' } }}
-      />
+      <Toaster position="top-center" toastOptions={{ classNames: { toast: '!rounded-xl !border-line !bg-[var(--paper-solid)] !shadow-lift !font-sans', title: '!text-ink !font-medium', description: '!text-ink-3' } }} />
     </ShellCtx.Provider>
   );
 }
 
-function Logo({ dark }: { dark?: boolean }) {
+/** The clouds. They hold still until a run is in flight, then the weather moves. */
+function Sky() {
+  const { data: runs } = useJson<RunListItem[]>('/api/runs', { refreshMs: 6_000 });
+  const moving = !!runs?.some((r) => r.status === 'running' || r.status === 'judging' || r.status === 'queued');
   return (
-    <Link href="/" className="flex items-center gap-2.5">
-      <span className={cx('grid size-8 place-items-center rounded-[9px]', dark ? 'bg-forest-700 ring-1 ring-white/10' : 'bg-forest-800')}>
-        <svg viewBox="0 0 32 32" className="size-5" aria-hidden>
-          <path d="M7 23h18M10 23V14M16 23V8M22 23v-6" stroke="#a9cbb5" strokeWidth="3.2" strokeLinecap="round" fill="none" />
+    <div className="sky no-print" data-moving={moving} aria-hidden>
+      <i className="sky-img" />
+      <i className="sky-wash" />
+    </div>
+  );
+}
+
+function Logo() {
+  return (
+    <Link href="/" className="flex shrink-0 items-center gap-2.5">
+      <span className="grid size-9 place-items-center rounded-[12px] bg-accent text-on-accent">
+        <svg viewBox="0 0 32 32" className="size-6" aria-hidden fill="currentColor">
+          <path d="M9.5 24a5 5 0 0 1-.7-9.95 7 7 0 0 1 13.45-1.1A5.6 5.6 0 0 1 22.5 24Z" />
         </svg>
       </span>
-      <span className={cx('text-[15px] font-semibold tracking-[-0.02em]', dark ? 'text-white' : 'text-ink')}>Bakeoff</span>
+      <span className="font-head text-[19px]">bakeoff</span>
     </Link>
   );
 }
 
-function Sidebar({ pathname, onSearch, onShortcuts, className }: { pathname: string; onSearch: () => void; onShortcuts: () => void; className?: string }) {
+function TopBar({ pathname }: { pathname: string }) {
   const { data: targets } = useJson<TargetWithStatus[]>('/api/targets', { refreshMs: 30_000 });
   const ready = targets?.filter((t) => t.status.state === 'ready').length ?? null;
   const enabled = targets?.filter((t) => t.enabled).length ?? null;
-
   const active = (href: string) => (href === '/' ? pathname === '/' : href === '/runs' ? pathname === '/runs' || (pathname.startsWith('/runs/') && pathname !== '/runs/new') : pathname.startsWith(href));
 
   return (
-    <aside className={cx('sticky top-0 h-dvh w-[248px] shrink-0 flex-col bg-forest-900 text-white', className)}>
-      <div className="flex h-16 items-center px-5">
-        <Logo dark />
-      </div>
-
-      <div className="px-3">
-        <button onClick={onSearch} className="flex h-9 w-full items-center gap-2 rounded-[10px] bg-white/[0.06] px-3 text-[13px] text-sage-200/80 ring-1 ring-white/[0.08] transition hover:bg-white/10">
-          <Search className="size-3.5" />
-          Search or jump to…
-          <span className="ml-auto flex gap-0.5">
-            <Kbd tone="dark">⌘</Kbd>
-            <Kbd tone="dark">K</Kbd>
-          </span>
-        </button>
-      </div>
-
-      <nav className="mt-4 flex flex-col gap-0.5 px-3">
-        {NAV.map((n) => {
-          const on = active(n.href);
-          return (
-            <Link
-              key={n.href}
-              href={n.href}
-              className={cx(
-                'group relative flex h-9 items-center gap-3 rounded-[10px] px-3 text-[13.5px] font-medium transition-colors',
-                on ? 'bg-white/[0.09] text-white' : 'text-sage-200/75 hover:bg-white/[0.05] hover:text-white'
-              )}
-            >
-              {on && <motion.span layoutId="nav-pill" className="absolute top-2 bottom-2 -left-3 w-[3px] rounded-r-full bg-forest-300" />}
-              <n.icon className={cx('size-[17px]', on ? 'text-forest-300' : 'text-sage-300/60 group-hover:text-sage-200')} />
-              {n.label}
-              <span className="ml-auto text-[11px] text-white/0 transition group-hover:text-white/35">G {n.chord.toUpperCase()}</span>
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className="mt-auto space-y-3 p-3">
-        <Link href="/targets" className="block rounded-xl bg-white/[0.05] p-3 ring-1 ring-white/[0.07] transition hover:bg-white/[0.08]">
-          <div className="flex items-center gap-2 text-[12.5px] font-medium text-sage-100">
-            <Dot tone={ready ? 'green' : 'muted'} pulse={!!ready} />
-            {ready == null ? 'Checking targets…' : `${ready} of ${enabled} targets ready`}
-          </div>
-          <div className="mt-1 text-[12px] leading-snug text-sage-300/70">{ready === 0 ? 'Start Ollama or log in to Claude Code to begin.' : 'Add API keys in .env.local to unlock hosted providers.'}</div>
+    <header className="no-print sticky top-0 z-30 px-3 pt-3 sm:px-6">
+      <div className="glass mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl border border-line px-3 py-2 shadow-card sm:flex-nowrap sm:pl-4">
+        <Logo />
+        <Link href="/targets" title="Targets that can run right now" className="ml-auto flex h-9 items-center gap-2 rounded-control px-2.5 text-[13px] font-medium text-ink-2 hover:bg-mist sm:order-3 sm:ml-0">
+          <Dot tone={ready ? 'green' : 'muted'} />
+          {ready == null ? 'Checking…' : `${ready} of ${enabled} ready`}
         </Link>
-        <button onClick={onShortcuts} className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[12.5px] text-sage-300/70 hover:text-sage-100">
-          <Keyboard className="size-3.5" /> Keyboard shortcuts <span className="ml-auto"><Kbd tone="dark">?</Kbd></span>
-        </button>
+        <nav aria-label="Main" className="scrollbar-none -mx-1 flex w-[calc(100%+0.5rem)] items-center gap-0.5 overflow-x-auto px-1 sm:order-2 sm:mx-auto sm:w-auto">
+          {NAV.filter((n) => n.href !== '/runs/new').map((n) => {
+            const on = active(n.href);
+            return (
+              <Link key={n.href} href={n.href} aria-current={on ? 'page' : undefined} className={cx('relative flex h-10 shrink-0 items-center rounded-control px-4 text-[14px] font-medium transition-colors', on ? 'text-ink' : 'text-ink-3 hover:text-ink')}>
+                {on && <motion.span layoutId="nav-pill" className="absolute inset-0 rounded-control bg-tint-2" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
+                <span className="relative">{n.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
       </div>
-    </aside>
+    </header>
+  );
+}
+
+function DockButton({ label, onClick, href, children, on }: { label: string; onClick?: () => void; href?: string; children: ReactNode; on?: boolean }) {
+  const cls = cx('grid size-11 place-items-center rounded-control transition-colors [&_svg]:size-[19px]', on ? 'bg-tint-2 text-ink' : 'text-ink-2 hover:bg-mist hover:text-ink');
+  return href ? (
+    <Link href={href} className={cls} aria-label={label} title={label}>
+      {children}
+    </Link>
+  ) : (
+    <button onClick={onClick} className={cls} aria-label={label} title={label} aria-pressed={on}>
+      {children}
+    </button>
+  );
+}
+
+function Dock({ onSearch, onShortcuts, onTweaks, tweaksOpen }: { onSearch: () => void; onShortcuts: () => void; onTweaks: () => void; tweaksOpen: boolean }) {
+  return (
+    <div className="no-print pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center px-3">
+      <div className="glass pointer-events-auto flex items-center gap-0.5 rounded-2xl border border-line-strong p-1.5 shadow-lift">
+        <DockButton label="Search (⌘K)" onClick={onSearch}><Search /></DockButton>
+        <DockButton label="New run (N)" href="/runs/new"><Plus /></DockButton>
+        <DockButton label="Quick check" href="/runs/new?preset=quick"><Zap /></DockButton>
+        <span className="mx-1 h-6 w-px bg-line" />
+        <DockButton label="Compare looks" href="/lab"><SwatchBook /></DockButton>
+        <DockButton label="Tweaks" onClick={onTweaks} on={tweaksOpen}><SlidersHorizontal /></DockButton>
+        <DockButton label="Keyboard shortcuts (?)" onClick={onShortcuts}><Keyboard /></DockButton>
+      </div>
+    </div>
+  );
+}
+
+function Tweaks({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { look, update, reset } = useLook();
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(look));
+      toast.success('Look copied', { description: 'Paste it to Claude to make it the permanent default.' });
+    } catch {
+      toast.error('The browser blocked the clipboard', { description: 'Allow clipboard access for this page, then try again.' });
+    }
+  };
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.aside
+          aria-label="Tweaks"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 12 }}
+          transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
+          className="solid no-print fixed inset-x-3 bottom-[88px] z-40 max-h-[70dvh] overflow-y-auto rounded-2xl border border-line-strong p-5 shadow-pop scrollbar-thin sm:right-6 sm:left-auto sm:w-[340px]"
+        >
+          <div className="flex items-center justify-between">
+            <h2 className="font-head text-[18px]">Tweaks</h2>
+            <button onClick={onClose} className="grid size-9 place-items-center rounded-lg text-ink-3 hover:bg-mist hover:text-ink" aria-label="Close tweaks">
+              <X className="size-4" />
+            </button>
+          </div>
+          <Field label="Direction">
+            <Choice value={look.direction} options={DIRECTIONS.map((d) => ({ id: d.id, label: d.name }))} onChange={(direction) => update({ direction })} />
+          </Field>
+          <Field label="Accent">
+            <Choice value={look.accent} options={ACCENTS.map((a) => ({ id: a.id, label: a.id === 'theme' ? 'Default' : a.label }))} onChange={(accent) => update({ accent })} />
+          </Field>
+          <Field label="Headings">
+            <Choice value={look.font} options={HEADING_FONTS.map((f) => ({ id: f.id, label: f.id === 'theme' ? 'Default' : f.label }))} onChange={(font) => update({ font })} />
+          </Field>
+          <Slider label="Clouds" value={look.clouds ?? 1} min={0} max={1} step={0.05} show={(v) => `${Math.round(v * 100)}%`} onChange={(clouds) => update({ clouds })} />
+          <Slider label="Glass blur" value={look.blur ?? 22} min={0} max={40} step={1} show={(v) => `${v}px`} onChange={(blur) => update({ blur })} />
+          <Slider label="Roundness" value={look.roundness} min={0.3} max={1.3} step={0.05} show={(v) => `${Math.round(v * 100)}%`} onChange={(roundness) => update({ roundness })} />
+          <Slider label="Text size" value={look.density} min={0.9} max={1.15} step={0.01} show={(v) => `${Math.round(v * 100)}%`} onChange={(density) => update({ density })} />
+          <div className="mt-5 flex gap-2">
+            <Button variant="primary" size="sm" className="flex-1" onClick={copy}>Copy this look</Button>
+            <Button size="sm" onClick={reset}>Reset</Button>
+          </div>
+        </motion.aside>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="mt-4">
+      <div className="mb-1.5 text-[13px] font-medium text-ink-2">{label}</div>
+      {children}
+    </div>
+  );
+}
+
+function Choice<T extends string>({ value, options, onChange }: { value: T; options: readonly { id: T; label: string }[]; onChange: (v: T) => void }) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {options.map((o) => (
+        <button key={o.id} onClick={() => onChange(o.id)} aria-pressed={o.id === value} className={cx('h-8 rounded-control border px-3 text-[13px] font-medium transition-colors', o.id === value ? 'border-tint-line bg-tint-2 text-ink' : 'border-line text-ink-3 hover:text-ink')}>
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Slider({ label, value, min, max, step, show, onChange }: { label: string; value: number; min: number; max: number; step: number; show: (v: number) => string; onChange: (v: number) => void }) {
+  return (
+    <label className="mt-4 block">
+      <span className="flex items-baseline justify-between text-[13px] font-medium text-ink-2">
+        {label}
+        <span className="tabular text-ink-3">{show(value)}</span>
+      </span>
+      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="mt-1.5 w-full accent-[var(--accent)]" />
+    </label>
   );
 }
 
@@ -215,13 +284,13 @@ function Palette({ open, onClose, onShortcuts }: { open: boolean; onClose: () =>
   return (
     <AnimatePresence>
       {open && (
-        <motion.div className="fixed inset-0 z-[60] flex items-start justify-center bg-forest-950/35 px-4 pt-[12vh] backdrop-blur-[3px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={onClose}>
+        <motion.div className="fixed inset-0 z-[60] flex items-start justify-center bg-scrim/60 px-4 pt-[12vh] backdrop-blur-[3px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={onClose}>
           <motion.div
             initial={{ opacity: 0, y: -8, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.16, ease: [0.2, 0.8, 0.2, 1] }}
-            className="w-full max-w-[600px] overflow-hidden rounded-2xl bg-paper shadow-pop"
+            className="solid w-full max-w-[600px] overflow-hidden rounded-2xl shadow-pop"
             onMouseDown={(e) => e.stopPropagation()}
           >
             <Command label="Command menu" loop onKeyDown={(e) => e.key === 'Escape' && onClose()}>
@@ -306,10 +375,10 @@ function Shortcuts({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <AnimatePresence>
       {open && (
-        <motion.div className="fixed inset-0 z-[60] grid place-items-center bg-forest-950/35 px-4 backdrop-blur-[3px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={onClose}>
-          <motion.div initial={{ scale: 0.97, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.97, opacity: 0 }} className="w-full max-w-md rounded-2xl bg-paper p-5 shadow-pop" onMouseDown={(e) => e.stopPropagation()}>
+        <motion.div className="fixed inset-0 z-[60] grid place-items-center bg-scrim/60 px-4 backdrop-blur-[3px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={onClose}>
+          <motion.div initial={{ scale: 0.97, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.97, opacity: 0 }} className="solid w-full max-w-md rounded-2xl p-5 shadow-pop" onMouseDown={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-[15px] font-semibold">Keyboard shortcuts</h2>
+              <h2 className="font-head text-[18px]">Keyboard shortcuts</h2>
               <button onClick={onClose} className="grid size-8 place-items-center rounded-lg text-ink-3 hover:bg-mist" aria-label="Close">
                 <X className="size-4" />
               </button>

@@ -32,7 +32,7 @@ export function LiveTab({ run, results, lanes, model }: { run: RunRow; results: 
           const done = q.length >= perTarget && !lane;
           const failures = mine.filter((r) => !r.ok).length;
           return (
-            <motion.div layout key={id} className="flex flex-col overflow-hidden rounded-2xl border border-line bg-paper shadow-card">
+            <motion.div layout key={id} className="flex flex-col overflow-hidden glass rounded-2xl border border-line shadow-card">
               <div className="flex items-center gap-2.5 border-b border-line px-4 py-3">
                 <Swatch color={m.color} />
                 <span className="truncate text-[14px] font-semibold">{m.label}</span>
@@ -55,7 +55,7 @@ export function LiveTab({ run, results, lanes, model }: { run: RunRow; results: 
                 <Metric label="Checks" value={q.length ? fmt.score(q.reduce((a, r) => a + (r.checkScore ?? 0), 0) / q.length) : '—'} />
               </div>
 
-              <div className="relative h-44 bg-[#fbfcfb]">
+              <div className="relative h-44 bg-mist">
                 {lane ? (
                   <StreamBox lane={lane} title={task(lane.taskId ?? '')?.title ?? lane.taskId ?? ''} />
                 ) : (
@@ -94,12 +94,12 @@ export function LiveTab({ run, results, lanes, model }: { run: RunRow; results: 
             {recent.map((r) => (
               <motion.div
                 key={r.id}
-                initial={{ opacity: 0, backgroundColor: '#e4efe8' }}
-                animate={{ opacity: 1, backgroundColor: '#ffffff' }}
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
                 className="flex items-center gap-3 border-b border-line px-4 py-2.5 text-[13px] last:border-b-0"
               >
-                {r.ok ? <Check className="size-3.5 shrink-0 text-forest-600" /> : <CircleAlert className="size-3.5 shrink-0 text-bad" />}
+                {r.ok ? <Check className="size-3.5 shrink-0 text-accent-ink" /> : <CircleAlert className="size-3.5 shrink-0 text-bad" />}
                 <Swatch color={model.meta(r.targetId).color} />
                 <span className="w-40 shrink-0 truncate text-ink-2 sm:w-56">{model.meta(r.targetId).label}</span>
                 <span className="min-w-0 flex-1 truncate text-ink-3">
@@ -121,7 +121,7 @@ export function LiveTab({ run, results, lanes, model }: { run: RunRow; results: 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="px-2 py-2">
-      <div className="text-[11px] text-ink-4">{label}</div>
+      <div className="text-[12px] text-ink-4">{label}</div>
       <div className="tabular text-[13.5px] font-semibold">{value}</div>
     </div>
   );
@@ -136,7 +136,7 @@ function StreamBox({ lane, title }: { lane: Lane; title: string }) {
   const since = lane.startedAt ? Date.now() - lane.startedAt : 0;
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between px-4 pt-2.5 text-[11.5px] text-ink-4">
+      <div className="flex items-center justify-between px-4 pt-2.5 text-[12px] text-ink-4">
         <span className="truncate">{title}</span>
         <span className="tabular shrink-0 pl-2">{lane.firstTokenAt && lane.startedAt ? `first token ${fmt.sec(lane.firstTokenAt - lane.startedAt)}` : `${fmt.sec(since)}…`}</span>
       </div>
@@ -148,7 +148,7 @@ function StreamBox({ lane, title }: { lane: Lane; title: string }) {
         ) : (
           <>
             {lane.text}
-            <span className="ml-px inline-block h-3.5 w-[7px] translate-y-0.5 animate-caret bg-forest-500" />
+            <span className="ml-px inline-block h-3.5 w-[7px] translate-y-0.5 animate-caret bg-accent" />
           </>
         )}
       </pre>

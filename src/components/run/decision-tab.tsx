@@ -39,7 +39,7 @@ export function DecisionTab({ results, model, inputs, targets }: { results: Resu
   const { meta } = model;
 
   return (
-    <div className="grid gap-6">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
       <Card className="p-5">
         <div className="flex flex-wrap items-center gap-3">
           <Scale className="size-4 text-ink-3" />

@@ -20,18 +20,18 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'subtle';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 const BUTTON_BASE =
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-[background,box-shadow,color,transform] duration-150 active:translate-y-px disabled:pointer-events-none disabled:opacity-45 select-none';
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-[background,box-shadow,color,transform,filter] duration-150 active:translate-y-px disabled:pointer-events-none disabled:opacity-45 select-none';
 const BUTTON_VARIANT: Record<ButtonVariant, string> = {
-  primary: 'bg-forest-700 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.12),0_1px_2px_rgb(7_26_18/0.3)] hover:bg-forest-800',
-  secondary: 'bg-paper text-ink border border-line-strong shadow-card hover:bg-mist hover:border-ink-4',
-  ghost: 'text-ink-2 hover:bg-sage-50 hover:text-ink',
-  subtle: 'bg-sage-50 text-forest-800 hover:bg-sage-100',
-  danger: 'bg-paper text-bad border border-line-strong hover:bg-[#fdf3f1] hover:border-[#e8b4aa]',
+  primary: 'bg-accent text-on-accent font-semibold hover:brightness-110 active:brightness-95',
+  secondary: 'bg-mist text-ink border border-line hover:bg-tint hover:border-line-strong',
+  ghost: 'text-ink-2 hover:bg-mist hover:text-ink',
+  subtle: 'bg-tint text-accent-ink hover:bg-tint-2',
+  danger: 'bg-mist text-bad border border-line hover:bg-bad-tint hover:border-bad/40',
 };
 const BUTTON_SIZE: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-[13px] rounded-lg',
-  md: 'h-9 px-3.5 text-sm rounded-[10px]',
-  lg: 'h-11 px-5 text-[15px] rounded-xl',
+  sm: 'h-8 px-3.5 text-[13px] rounded-control',
+  md: 'h-10 px-4 text-sm rounded-control',
+  lg: 'h-12 px-6 text-[15px] rounded-control',
 };
 
 interface ButtonProps extends ComponentProps<'button'> {
@@ -71,8 +71,8 @@ export function Kbd({ children, tone = 'light' }: { children: ReactNode; tone?: 
   return (
     <kbd
       className={cx(
-        'ml-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-[5px] px-1 font-sans text-[11px] font-medium',
-        tone === 'dark' ? 'bg-white/15 text-white/85' : 'border border-line bg-mist text-ink-3 shadow-[0_1px_0_var(--color-line)]'
+        'ml-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-[5px] px-1 font-sans text-[12px] font-medium',
+        tone === 'dark' ? 'bg-on-accent/15 text-on-accent' : 'border border-line bg-mist text-ink-3'
       )}
     >
       {children}
@@ -85,11 +85,11 @@ export function Kbd({ children, tone = 'light' }: { children: ReactNode; tone?: 
 type Tone = 'neutral' | 'green' | 'warn' | 'bad' | 'info' | 'dark';
 const TONE: Record<Tone, string> = {
   neutral: 'bg-mist text-ink-2 border-line',
-  green: 'bg-sage-50 text-forest-700 border-sage-200',
-  warn: 'bg-[#fdf6e9] text-warn border-[#f1dcb2]',
-  bad: 'bg-[#fdf1ef] text-bad border-[#f2c9c1]',
-  info: 'bg-[#eef4fc] text-[#1f5fae] border-[#cfe0f6]',
-  dark: 'bg-forest-800 text-white border-forest-800',
+  green: 'bg-good-tint text-good border-good/30',
+  warn: 'bg-warn-tint text-warn border-warn/30',
+  bad: 'bg-bad-tint text-bad border-bad/30',
+  info: 'bg-info-tint text-info border-info/30',
+  dark: 'bg-hero text-on-hero border-hero',
 };
 
 export function Badge({ tone = 'neutral', children, className, icon }: { tone?: Tone; children: ReactNode; className?: string; icon?: ReactNode }) {
@@ -102,7 +102,7 @@ export function Badge({ tone = 'neutral', children, className, icon }: { tone?: 
 }
 
 export function Dot({ tone = 'green', pulse }: { tone?: 'green' | 'warn' | 'bad' | 'muted'; pulse?: boolean }) {
-  const color = { green: 'bg-forest-500', warn: 'bg-warn', bad: 'bg-bad', muted: 'bg-ink-4' }[tone];
+  const color = { green: 'bg-good', warn: 'bg-warn', bad: 'bg-bad', muted: 'bg-ink-4' }[tone];
   return <span className={cx('inline-block size-2 shrink-0 rounded-full', color, pulse && 'animate-pulse-dot')} />;
 }
 
@@ -110,7 +110,7 @@ export function Dot({ tone = 'green', pulse }: { tone?: 'green' | 'warn' | 'bad'
 
 export function Card({ className, children, ...rest }: ComponentProps<'div'>) {
   return (
-    <div className={cx('rounded-2xl border border-line bg-paper shadow-card', className)} {...rest}>
+    <div className={cx('glass rounded-2xl border border-line shadow-card', className)} {...rest}>
       {children}
     </div>
   );
@@ -118,27 +118,28 @@ export function Card({ className, children, ...rest }: ComponentProps<'div'>) {
 
 export function CardHeader({ title, subtitle, action, className }: { title: ReactNode; subtitle?: ReactNode; action?: ReactNode; className?: string }) {
   return (
-    <div className={cx('flex items-start justify-between gap-4 px-5 pt-4 pb-3', className)}>
-      <div className="min-w-0">
-        <h3 className="text-[15px] font-semibold tracking-[-0.01em] text-ink">{title}</h3>
+    <div className={cx('flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-5 pt-4 pb-3', className)}>
+      <div className="min-w-[min(100%,14rem)] flex-1">
+        <h2 className="font-head text-[17px] text-ink">{title}</h2>
         {subtitle && <p className="mt-0.5 text-[13px] text-ink-3">{subtitle}</p>}
       </div>
-      {action && <div className="shrink-0">{action}</div>}
+      {action && <div className="max-w-full">{action}</div>}
     </div>
   );
 }
 
 // ---------------------------------------------------------------- Stat tile
 
+/** Headline numbers sit straight on the sky, no box. `accent` makes one number the point of the row. */
 export function Stat({ label, value, sub, accent, icon }: { label: string; value: ReactNode; sub?: ReactNode; accent?: boolean; icon?: ReactNode }) {
   return (
-    <div className={cx('rounded-2xl border p-4', accent ? 'border-forest-700 bg-forest-800 text-white' : 'border-line bg-paper shadow-card')}>
-      <div className={cx('flex items-center gap-1.5 text-[12.5px] font-medium', accent ? 'text-sage-200' : 'text-ink-3')}>
+    <div className="min-w-0">
+      <div className={cx('tabular text-[30px] leading-none font-semibold tracking-[-0.02em] sm:text-[34px]', accent ? 'text-accent-ink' : 'text-ink')}>{value}</div>
+      <div className="mt-2 flex items-center gap-1.5 text-[13.5px] font-medium text-ink-2">
         {icon}
         {label}
       </div>
-      <div className={cx('tabular mt-1.5 text-[26px] leading-none font-semibold tracking-[-0.02em]', accent ? 'text-white' : 'text-ink')}>{value}</div>
-      {sub && <div className={cx('mt-1.5 line-clamp-2 text-[12.5px] leading-snug', accent ? 'text-sage-200/90' : 'text-ink-3')}>{sub}</div>}
+      {sub && <div className="mt-0.5 line-clamp-2 text-[13px] leading-snug text-ink-3">{sub}</div>}
     </div>
   );
 }
@@ -147,7 +148,7 @@ export function Stat({ label, value, sub, accent, icon }: { label: string; value
 
 export function Tabs<T extends string>({ value, onChange, items, id }: { value: T; onChange: (v: T) => void; items: { value: T; label: string; icon?: ReactNode; count?: ReactNode }[]; id: string }) {
   return (
-    <div role="tablist" className="flex items-center gap-1 overflow-x-auto border-b border-line scrollbar-thin">
+    <div role="tablist" className="scrollbar-none -mx-1 flex items-center gap-1 overflow-x-auto px-1 py-1">
       {items.map((it) => {
         const active = it.value === value;
         return (
@@ -156,12 +157,14 @@ export function Tabs<T extends string>({ value, onChange, items, id }: { value: 
             role="tab"
             aria-selected={active}
             onClick={() => onChange(it.value)}
-            className={cx('relative flex h-10 items-center gap-1.5 px-3 text-[13.5px] font-medium whitespace-nowrap transition-colors', active ? 'text-forest-800' : 'text-ink-3 hover:text-ink')}
+            className={cx('relative flex h-10 shrink-0 items-center gap-1.5 rounded-control px-4 text-[14px] font-medium whitespace-nowrap transition-colors', active ? 'text-ink' : 'text-ink-3 hover:text-ink')}
           >
-            {it.icon}
-            {it.label}
-            {it.count != null && <span className="tabular rounded-full bg-mist px-1.5 text-[11px] text-ink-3">{it.count}</span>}
-            {active && <motion.span layoutId={`tab-${id}`} className="absolute inset-x-2 -bottom-px h-[2px] rounded-full bg-forest-600" transition={{ type: 'spring', stiffness: 500, damping: 38 }} />}
+            {active && <motion.span layoutId={`tab-${id}`} className="absolute inset-0 rounded-control bg-tint-2" transition={{ type: 'spring', stiffness: 500, damping: 38 }} />}
+            <span className="relative flex items-center gap-1.5">
+              {it.icon}
+              {it.label}
+              {it.count != null && <span className="tabular rounded-full bg-mist px-1.5 text-[12px] text-ink-3">{it.count}</span>}
+            </span>
           </button>
         );
       })}
@@ -173,15 +176,15 @@ export function Tabs<T extends string>({ value, onChange, items, id }: { value: 
 
 export function Segmented<T extends string | number>({ value, onChange, options, size = 'md' }: { value: T; onChange: (v: T) => void; options: { value: T; label: ReactNode }[]; size?: 'sm' | 'md' }) {
   return (
-    <div className="inline-flex rounded-[10px] border border-line bg-mist p-0.5">
+    <div className="scrollbar-none inline-flex max-w-full overflow-x-auto rounded-control border border-line bg-mist p-0.5">
       {options.map((o) => (
         <button
           key={String(o.value)}
           onClick={() => onChange(o.value)}
           className={cx(
-            'rounded-lg font-medium transition-all',
+            'shrink-0 rounded-control font-medium transition-all',
             size === 'sm' ? 'h-7 px-2.5 text-[12.5px]' : 'h-8 px-3 text-[13px]',
-            o.value === value ? 'bg-paper text-ink shadow-card' : 'text-ink-3 hover:text-ink'
+            o.value === value ? 'bg-tint-2 text-ink' : 'text-ink-3 hover:text-ink'
           )}
         >
           {o.label}
@@ -201,7 +204,7 @@ export function Switch({ checked, onChange, label, description }: { checked: boo
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className={cx('relative mt-0.5 inline-flex h-5 w-9 shrink-0 rounded-full transition-colors', checked ? 'bg-forest-600' : 'bg-line-strong')}
+        className={cx('relative mt-0.5 inline-flex h-5 w-9 shrink-0 rounded-full transition-colors', checked ? 'bg-accent' : 'bg-line-strong')}
       >
         <motion.span layout transition={{ type: 'spring', stiffness: 600, damping: 35 }} className={cx('absolute top-0.5 size-4 rounded-full bg-white shadow', checked ? 'right-0.5' : 'left-0.5')} />
       </button>
@@ -219,7 +222,7 @@ export function Switch({ checked, onChange, label, description }: { checked: boo
 
 export function Stepper({ value, onChange, min = 1, max = 99, suffix }: { value: number; onChange: (v: number) => void; min?: number; max?: number; suffix?: string }) {
   return (
-    <div className="inline-flex h-9 items-center rounded-[10px] border border-line-strong bg-paper shadow-card">
+    <div className="inline-flex h-9 items-center rounded-control border border-line bg-mist">
       <button className="grid h-full w-8 place-items-center text-ink-3 hover:text-ink disabled:opacity-30" onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min} aria-label="Decrease">
         <Minus className="size-3.5" />
       </button>
@@ -237,13 +240,13 @@ export function Stepper({ value, onChange, min = 1, max = 99, suffix }: { value:
 // ---------------------------------------------------------------- misc
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cx('rounded-lg bg-[linear-gradient(90deg,var(--color-mist),var(--color-sage-50),var(--color-mist))] bg-[length:200%_100%] animate-shimmer', className)} />;
+  return <div className={cx('rounded-lg bg-[linear-gradient(90deg,var(--mist),var(--tint-2),var(--mist))] bg-[length:200%_100%] animate-shimmer', className)} />;
 }
 
 export function EmptyState({ icon, title, body, action }: { icon: ReactNode; title: string; body: ReactNode; action?: ReactNode }) {
   return (
     <div className="flex flex-col items-center px-6 py-14 text-center">
-      <div className="grid size-12 place-items-center rounded-2xl border border-sage-200 bg-sage-50 text-forest-600">{icon}</div>
+      <div className="grid size-12 place-items-center rounded-xl border border-tint-line bg-tint text-accent-ink">{icon}</div>
       <h3 className="mt-4 text-[15px] font-semibold">{title}</h3>
       <p className="mt-1 max-w-sm text-sm text-ink-3">{body}</p>
       {action && <div className="mt-5">{action}</div>}
@@ -254,20 +257,20 @@ export function EmptyState({ icon, title, body, action }: { icon: ReactNode; tit
 export function SectionLabel({ children, hint }: { children: ReactNode; hint?: ReactNode }) {
   return (
     <div className="mb-2.5 flex items-baseline justify-between gap-3">
-      <h2 className="text-[13px] font-semibold tracking-wide text-ink-2 uppercase">{children}</h2>
+      <h2 className="font-head text-[17px] text-ink">{children}</h2>
       {hint && <span className="text-[12.5px] text-ink-3">{hint}</span>}
     </div>
   );
 }
 
 export function Swatch({ color, shape = 'dot' }: { color: string; shape?: 'dot' | 'line' }) {
-  return shape === 'line' ? <span className="inline-block h-[3px] w-3.5 shrink-0 rounded-full" style={{ background: color }} /> : <span className="inline-block size-2.5 shrink-0 rounded-full ring-2 ring-white" style={{ background: color }} />;
+  return shape === 'line' ? <span className="inline-block h-[3px] w-3.5 shrink-0 rounded-full" style={{ background: color }} /> : <span className="inline-block size-2.5 shrink-0 rounded-full ring-2 ring-[var(--chart-ring)]" style={{ background: color }} />;
 }
 
 export function Progress({ value, running }: { value: number; running?: boolean }) {
   return (
-    <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-sage-100">
-      <motion.div className="relative h-full rounded-full bg-forest-500" initial={false} animate={{ width: `${Math.max(2, value * 100)}%` }} transition={{ type: 'spring', stiffness: 120, damping: 24 }}>
+    <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-mist">
+      <motion.div className="relative h-full rounded-full bg-accent" initial={false} animate={{ width: `${Math.max(2, value * 100)}%` }} transition={{ type: 'spring', stiffness: 120, damping: 24 }}>
         {running && <div className="sheen absolute inset-0 rounded-full" />}
       </motion.div>
     </div>

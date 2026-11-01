@@ -58,7 +58,7 @@ export function OutputsTab({ run, results, setResults, model }: { run: RunRow; r
     <div className="space-y-4">
       <div className="flex flex-col gap-3 rounded-2xl border border-line bg-mist/50 px-4 py-3 sm:flex-row sm:items-center">
         <div className="flex items-center gap-2 text-[13.5px] font-medium text-ink-2">
-          <Scale className="size-4 text-forest-600" /> Judge calibration
+          <Scale className="size-4 text-accent-ink" /> Judge calibration
         </div>
         {cal.n === 0 ? (
           <p className="text-[13px] text-ink-3">
@@ -78,12 +78,12 @@ export function OutputsTab({ run, results, setResults, model }: { run: RunRow; r
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[260px_1fr]">
-        <Card className="h-fit overflow-hidden lg:sticky lg:top-4">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <Card className="h-fit overflow-hidden lg:sticky lg:top-24">
           <div className="max-h-[70vh] overflow-y-auto p-2 scrollbar-thin">
             {TASK_TYPE_ORDER.filter((tt) => run.config.taskTypes.includes(tt)).map((tt) => (
               <div key={tt} className="mb-1">
-                <div className="px-2.5 pt-2 pb-1 text-[11px] font-semibold tracking-wide text-ink-4 uppercase">{TASK_TYPES[tt].label}</div>
+                <div className="px-2.5 pt-2 pb-1 text-[12px] font-semibold tracking-wide text-ink-4 uppercase">{TASK_TYPES[tt].label}</div>
                 {taskIds
                   .filter((id) => quality.find((r) => r.taskId === id)?.taskType === tt)
                   .map((id) => {
@@ -92,7 +92,7 @@ export function OutputsTab({ run, results, setResults, model }: { run: RunRow; r
                       <button
                         key={id}
                         onClick={() => (setSelected(id), setFocus(0))}
-                        className={cx('w-full rounded-[10px] px-2.5 py-2 text-left transition', id === current ? 'bg-sage-100 text-forest-900' : 'hover:bg-mist')}
+                        className={cx('w-full rounded-[10px] px-2.5 py-2 text-left transition', id === current ? 'bg-tint-2 text-accent-ink' : 'hover:bg-mist')}
                       >
                         <div className="truncate text-[13px] font-medium">{task(id)?.title ?? id}</div>
                         <div className="mt-1 flex gap-1">
@@ -101,7 +101,7 @@ export function OutputsTab({ run, results, setResults, model }: { run: RunRow; r
                               key={r.id}
                               title={`${model.meta(r.targetId).label}: checks ${fmt.score(r.checkScore)}`}
                               className="h-1.5 flex-1 rounded-full"
-                              style={{ background: !r.ok ? '#b4321f' : (r.checkScore ?? 0) >= 0.99 ? '#237a55' : (r.checkScore ?? 0) >= 0.7 ? '#a9cbb5' : '#e3b9a8' }}
+                              style={{ background: !r.ok ? 'var(--bad)' : (r.checkScore ?? 0) >= 0.99 ? 'var(--accent)' : (r.checkScore ?? 0) >= 0.7 ? 'var(--tint-line)' : 'var(--line-strong)' }}
                             />
                           ))}
                         </div>
@@ -127,10 +127,10 @@ export function OutputsTab({ run, results, setResults, model }: { run: RunRow; r
                 {t.account.company} · {t.account.industry} · {t.account.contact.name}, {t.account.contact.title}
               </p>
               <details className="group mt-3">
-                <summary className="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-forest-700 hover:text-forest-900">
+                <summary className="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-accent-ink hover:text-accent-ink">
                   <ChevronDown className="size-3.5 transition group-open:rotate-180" /> What the model was given
                 </summary>
-                <pre className="mt-2 max-h-80 overflow-y-auto rounded-xl bg-mist p-3 font-mono text-[11.5px] leading-relaxed whitespace-pre-wrap text-ink-2 scrollbar-thin">{t.prompt.user}</pre>
+                <pre className="mt-2 max-h-80 overflow-y-auto rounded-xl bg-mist p-3 font-mono text-[12px] leading-relaxed whitespace-pre-wrap text-ink-2 scrollbar-thin">{t.prompt.user}</pre>
               </details>
             </Card>
           )}
@@ -151,7 +151,7 @@ function OutputCard({ r, model, type, focused, onFocus, onGrade, repeatLabel }: 
   const m = model.meta(r.targetId);
   const parsed = r.output ? (extractJson(r.output) as Record<string, unknown> | null) : null;
   return (
-    <div onClick={onFocus} className={cx('flex flex-col rounded-2xl border bg-paper shadow-card transition', focused ? 'border-forest-500 ring-2 ring-forest-500/20' : 'border-line')}>
+    <div onClick={onFocus} className={cx('flex flex-col glass rounded-2xl border shadow-card transition', focused ? 'border-accent ring-2 ring-accent/20' : 'border-line')}>
       <div className="flex items-center gap-2 border-b border-line px-4 py-3">
         <Swatch color={m.color} />
         <span className="truncate text-[13.5px] font-semibold">{m.label}</span>
@@ -165,9 +165,9 @@ function OutputCard({ r, model, type, focused, onFocus, onGrade, repeatLabel }: 
 
       <div className="flex-1 px-4 py-3.5">
         {!r.ok ? (
-          <div className="rounded-xl bg-[#fdf1ef] p-3 text-[13px] text-bad">{r.error}</div>
+          <div className="rounded-xl bg-bad-tint p-3 text-[13px] text-bad">{r.error}</div>
         ) : raw || !parsed ? (
-          <pre className="max-h-80 overflow-y-auto font-mono text-[11.5px] leading-relaxed whitespace-pre-wrap text-ink-2 scrollbar-thin">{r.output}</pre>
+          <pre className="max-h-80 overflow-y-auto font-mono text-[12px] leading-relaxed whitespace-pre-wrap text-ink-2 scrollbar-thin">{r.output}</pre>
         ) : (
           <Pretty type={type} o={parsed} />
         )}
@@ -180,7 +180,7 @@ function OutputCard({ r, model, type, focused, onFocus, onGrade, repeatLabel }: 
               <span
                 key={c.id}
                 title={c.detail}
-                className={cx('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11.5px]', c.pass ? 'bg-sage-50 text-forest-700' : 'bg-[#fdf1ef] text-bad')}
+                className={cx('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px]', c.pass ? 'bg-tint text-accent-ink' : 'bg-bad-tint text-bad')}
               >
                 {c.pass ? <Check className="size-3" /> : <X className="size-3" />}
                 {c.label}
@@ -209,7 +209,7 @@ function OutputCard({ r, model, type, focused, onFocus, onGrade, repeatLabel }: 
                   }}
                   className={cx(
                     'tabular size-7 rounded-lg border text-[12.5px] font-medium transition',
-                    r.humanScore === s ? 'border-forest-600 bg-forest-700 text-white' : 'border-line text-ink-3 hover:border-line-strong hover:text-ink'
+                    r.humanScore === s ? 'border-accent bg-hero text-on-hero' : 'border-line text-ink-3 hover:border-line-strong hover:text-ink'
                   )}
                 >
                   {s}
@@ -229,7 +229,7 @@ function OutputCard({ r, model, type, focused, onFocus, onGrade, repeatLabel }: 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-[11px] font-semibold tracking-wide text-ink-4 uppercase">{label}</div>
+      <div className="text-[12px] font-semibold tracking-wide text-ink-4 uppercase">{label}</div>
       <div className="mt-0.5 text-[13.5px] leading-relaxed text-ink">{children}</div>
     </div>
   );

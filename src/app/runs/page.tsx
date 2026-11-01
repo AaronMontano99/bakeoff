@@ -17,7 +17,7 @@ export default function RunsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
-      <PageHeader eyebrow="History" title="Runs" description="Every bake-off, from the dashboard or the terminal." actions={<ButtonLink href="/runs/new" variant="primary" icon={<Play className="size-4" />} kbd="N">New run</ButtonLink>} />
+      <PageHeader title="Runs" description="Every bake-off, from the dashboard or the terminal." actions={<ButtonLink href="/runs/new" variant="primary" icon={<Play className="size-4" />} kbd="N">New run</ButtonLink>} />
       {loading && !runs ? (
         <div className="space-y-2">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-20" />)}</div>
       ) : !runs?.length ? (
@@ -48,7 +48,7 @@ export default function RunsPage() {
                 </div>
                 {r.best && (
                   <div className="flex shrink-0 items-center gap-1.5 text-[12.5px] text-ink-3">
-                    <Trophy className="size-3.5 text-forest-600" />
+                    <Trophy className="size-3.5 text-accent-ink" />
                     {t(r.best.targetId)?.label ?? r.best.targetId}
                     <span className="tabular font-semibold text-ink">{fmt.score(r.best.quality)}</span>
                   </div>
