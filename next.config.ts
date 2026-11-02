@@ -1,4 +1,7 @@
 import type { NextConfig } from 'next';
+import { generateRegistry } from './scripts/gen-workloads.mjs';
+
+generateRegistry();
 
 const nextConfig: NextConfig = {
   // node:sqlite is a Node builtin; keep the bundler's hands off it.

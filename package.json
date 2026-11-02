@@ -10,9 +10,9 @@
     "dev": "npx -y node@22 --no-warnings node_modules/next/dist/bin/next dev -p 3100",
     "build": "npx -y node@22 --no-warnings node_modules/next/dist/bin/next build",
     "start": "npx -y node@22 --no-warnings node_modules/next/dist/bin/next start -p 3100",
-    "bakeoff": "npx -y node@22 --no-warnings --import tsx src/cli/index.ts",
+    "bakeoff": "npx -y node@22 --no-warnings scripts/gen-workloads.mjs >/dev/null && npx -y node@22 --no-warnings --import tsx src/cli/index.ts",
     "test": "npx -y node@22 --no-warnings node_modules/vitest/vitest.mjs run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "node scripts/gen-workloads.mjs >/dev/null && tsc --noEmit"
   },
   "engines": {
     "node": ">=22.13.0"

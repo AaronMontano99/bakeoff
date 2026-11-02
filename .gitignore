@@ -11,3 +11,12 @@ data/claude-workdir
 
 # Vercel CLI link
 .vercel
+
+# Generated from the folders in workloads/
+src/core/workload/registry*.generated.ts
+
+# Your projects stay on your machine. Only the built-in example and the template are shared.
+/workloads/*
+!/workloads/README.md
+!/workloads/_template/
+!/workloads/scout-sdr/

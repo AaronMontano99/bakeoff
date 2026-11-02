@@ -4,7 +4,7 @@ import { ArrowDown, ArrowUp, Lightbulb } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { CaseInputs, TargetSummary } from '@/core/analysis';
 import type { ResultRow, RunRow } from '@/core/types';
-import { TASK_TYPE_ORDER, TASK_TYPES } from '@/core/workload/meta';
+import { TASK_TYPE_ORDER, jobInfo, sloP95, TASK_TYPES } from '@/core/workload/meta';
 import { FrontierChart } from '@/components/charts';
 import { Card, CardHeader, cx, Swatch } from '@/components/ui';
 import { fmt } from '@/lib/format';
@@ -14,7 +14,7 @@ import type { RunModel } from '@/lib/run-model';
 type SortKey = 'quality' | 'accuracy' | 'judgeScore' | 'checkScore' | 'ttftP50' | 'totalP95' | 'tokensPerSec' | 'costPerRequest' | 'coldStartMs';
 const COLUMNS: { key: SortKey; label: string; hint: string; fmt: (s: TargetSummary) => string; lowerIsBetter?: boolean }[] = [
   { key: 'quality', label: 'Quality', hint: 'Half deterministic checks, half judge (rescaled 0-100), times success rate', fmt: (s) => fmt.score(s.quality) },
-  { key: 'accuracy', label: 'Accuracy', hint: 'Ground-truth checks only: signal labels, debrief outcomes, meeting flags', fmt: (s) => fmt.pct(s.accuracy) },
+  { key: 'accuracy', label: 'Accuracy', hint: 'Ground-truth checks only: answers that have one right value', fmt: (s) => fmt.pct(s.accuracy) },
   { key: 'judgeScore', label: 'Judge', hint: 'Mean LLM-judge grade, 1-5', fmt: (s) => (s.judgeScore == null ? '—' : s.judgeScore.toFixed(1)) },
   { key: 'ttftP50', label: 'TTFT p50', hint: 'Median time to the first visible token', fmt: (s) => fmt.sec(s.ttftP50), lowerIsBetter: true },
   { key: 'totalP95', label: 'p95', hint: '95th percentile total request time', fmt: (s) => fmt.sec(s.totalP95), lowerIsBetter: true },
@@ -136,7 +136,7 @@ export function OverviewTab({ run, results, model, inputs }: { run: RunRow; resu
                   <th />
                   {types.map((t) => (
                     <th key={t} className="px-1 pb-1 text-center font-medium text-ink-3">
-                      {TASK_TYPES[t].short}
+                      {jobInfo(t).short}
                     </th>
                   ))}
                 </tr>
@@ -153,7 +153,7 @@ export function OverviewTab({ run, results, model, inputs }: { run: RunRow; resu
                           key={t}
                           className="tabular h-9 min-w-14 rounded-md text-center font-semibold"
                           style={c ? { background: c.bg, color: c.fg } : { background: 'var(--mist)', color: 'var(--ink-4)' }}
-                          title={`${meta(s.targetId).label} · ${TASK_TYPES[t].label}: ${fmt.score(q)} quality, p95 ${fmt.sec(s.byType[t]?.totalP95)}`}
+                          title={`${meta(s.targetId).label} · ${jobInfo(t).label}: ${fmt.score(q)} quality, p95 ${fmt.sec(s.byType[t]?.totalP95)}`}
                         >
                           {fmt.score(q)}
                         </td>
@@ -193,8 +193,17 @@ function buildFindings(model: RunModel, results: ResultRow[], inputs: CaseInputs
   const cold = summaries.filter((s) => s.coldStartMs != null && s.totalP50 != null && s.coldStartMs > s.totalP50 * 2.5);
   for (const s of cold) out.push(`${name(s.targetId)} took ${fmt.sec(s.coldStartMs)} on its first request vs ${fmt.sec(s.totalP50)} warm: cold starts matter for bursty traffic.`);
   const cached = summaries.filter((s) => (s.cacheHitRate ?? 0) > 0.3);
-  for (const s of cached) out.push(`${name(s.targetId)} served ${fmt.pct(s.cacheHitRate)} of input tokens from the prompt cache; the shared playbook is the cacheable prefix.`);
-  const sig = summaries.map((s) => ({ s, st: s.byType.signal })).filter((x) => x.st && x.st.totalP95 != null && x.st.totalP95 > inputs.sloMs.signal);
-  if (sig.length) out.push(`${sig.map((x) => name(x.s.targetId)).join(', ')} missed the ${fmt.sec(inputs.sloMs.signal, 0)} p95 budget for signal checks, the job a rep runs on every account.`);
+  for (const s of cached) out.push(`${name(s.targetId)} served ${fmt.pct(s.cacheHitRate)} of input tokens from the prompt cache; the shared prompt prefix is what gets cached.`);
+  for (const t of TASK_TYPE_ORDER) {
+    const job = jobInfo(t);
+    if (!job.budgetNote) continue;
+    const budget = inputs.sloMs[t]!;
+    const missed = summaries.flatMap((s) => {
+      const st = s.byType[t];
+      const p95 = st ? sloP95(st, t) : null;
+      return budget != null && p95 != null && p95 > budget ? [`${name(s.targetId)} (${fmt.sec(p95)})`] : [];
+    });
+    if (missed.length) out.push(`${missed.join(', ')} missed the ${fmt.sec(budget ?? null, 0)} ${job.sloMetric === 'ttft' ? 'first-word' : 'p95'} budget for ${job.budgetNote}.`);
+  }
   return out.slice(0, 6);
 }

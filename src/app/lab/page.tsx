@@ -1,7 +1,7 @@
 'use client';
 
 import { Check } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { defaultCaseInputs } from '@/core/analysis';
 import { ScoreRing, shortLabel, SpeedBars } from '@/components/charts';
 import { PageHeader } from '@/components/page';
@@ -22,7 +22,7 @@ export default function LabPage() {
   const { data: targets } = useJson<TargetWithStatus[]>('/api/targets');
   const latest = runs?.find((r) => r.status === 'done');
   const { data } = useJson<RunDetail>(latest ? `/api/runs/${latest.id}` : null);
-  const [inputs] = useState(defaultCaseInputs);
+  const inputs = useMemo(() => defaultCaseInputs(data?.run.config.workload), [data?.run.config.workload]);
   const model = useRunModel(data?.run, data?.results ?? [], targets, inputs);
 
   return (

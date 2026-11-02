@@ -62,47 +62,51 @@ export type TargetStatus =
   | { state: 'offline'; detail: string }
   | { state: 'disabled'; detail: string };
 
-export type TaskType = 'signal' | 'debrief' | 'email' | 'callcard';
+/** A job, defined by a project in workloads/. Ids are unique across projects. */
+export type TaskType = string;
 
-export interface Account {
-  company: string;
-  city: string;
-  industry: string;
-  employees: string;
-  contact: { name: string; title: string };
-  crmNotes: string;
-  research: string;
-}
+/** A project's folder name in workloads/. */
+export type WorkloadId = string;
 
 export interface Task {
   id: string;
   type: TaskType;
   title: string;
-  account: Account;
-  /** debrief only: the rep's raw after-call notes. */
-  callNotes?: string;
   /** dev = where picks are made; holdout = only used to check a pick already made. */
   split?: 'dev' | 'holdout';
+  /** Task-specific input, read only by the project's own plugin. */
+  input?: Record<string, unknown>;
   /** Ground truth for tasks that have one right answer. */
-  gold?: {
-    signalStatus?: 'HARD SIGNAL' | 'SOFT SIGNAL' | 'NO RECENT SIGNAL';
-    outcome?: string;
-    meetingBooked?: boolean;
-    meetingAsked?: boolean;
-  };
+  gold?: Record<string, unknown>;
+  /** Anything else in tasks.json. */
+  [key: string]: unknown;
 }
 
 export interface TaskTypeInfo {
   type: TaskType;
+  workload: WorkloadId;
   label: string;
   /** One word, for tight spots like chart columns and filter chips. */
   short: string;
   blurb: string;
+  /** Named when this job misses its latency budget: "signal checks, the job a rep runs on every account". */
+  budgetNote?: string;
+  /** Shown before a run on a local model if this job is slow there. */
+  localWarning?: string;
+  /** Only warn from this many tasks per job. Default 1. */
+  localWarningFromTasks?: number;
   /** What the shape of the traffic looks like, for the workload page. */
   profile: string;
   /** Default p95 latency budget the business case holds this task to. */
   defaultSloMs: number;
-  /** Default share of monthly volume (per rep per working day). */
+  /**
+   * Which latency the budget is held to. 'total' = until the answer is done.
+   * 'ttft' = until the first word shows, for answers the user watches stream in.
+   */
+  sloMetric?: 'total' | 'ttft';
+  /** 'text' jobs answer in prose, so JSON mode stays off for them. Default 'json'. */
+  output?: 'json' | 'text';
+  /** Default share of monthly volume (per rep, or per user, per working day). */
   defaultPerRepPerDay: number;
   maxTokens: number;
 }
@@ -112,6 +116,8 @@ export interface Prompt {
   /** Large stable prefix that every task shares (cache candidate). */
   playbook: string;
   user: string;
+  /** false for prose answers: providers skip JSON mode. Default true. */
+  json?: boolean;
 }
 
 export interface Usage {
@@ -177,6 +183,8 @@ export interface ResultRow {
 
 export interface RunConfig {
   name: string;
+  /** Which project the run draws tasks from. Runs from before projects were pluggable use the default. */
+  workload?: WorkloadId;
   targetIds: string[];
   taskTypes: TaskType[];
   /** Cap tasks per type, so a run on a laptop stays short. */

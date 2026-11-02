@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { PageHeader } from '@/components/page';
+import { WORKLOADS, WORKLOAD_ORDER } from '@/core/workload/meta';
 
 export const metadata: Metadata = { title: 'Method' };
 
@@ -8,11 +9,12 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
     title: 'The workload',
     body: (
       <>
-        <p>
-          Ferret is a prospecting tool used daily in a full-cycle B2B sales job. Its AI work splits into four jobs with very different traffic shapes: a short <b>signal check</b> run on every account,
-          a <b>call debrief</b> after every dial, a <b>cold email</b>, and a long <b>call card</b> before a call block. Bakeoff rebuilds those jobs on 24 fictional Bay Area accounts so no customer data
-          is sent anywhere. Every request carries the same long rep playbook first, as Ferret does, which makes it a realistic prompt-caching test.
-        </p>
+        <p>A workload is one project's real AI jobs, rebuilt on fictional data so no customer data is sent anywhere. Each job keeps its real traffic shape, because a job that runs 40 times a day needs something different from the hardest job of the day.</p>
+        {WORKLOAD_ORDER.map((w) => (
+          <p key={w}>
+            <b>{WORKLOADS[w]!.short}:</b> {WORKLOADS[w]!.about}
+          </p>
+        ))}
       </>
     ),
   },

@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { defaultCaseInputs, type CaseInputs } from '@/core/analysis';
-import { TASK_TYPES } from '@/core/workload/meta';
+import { jobInfo, TASK_TYPES, workloadMeta } from '@/core/workload/meta';
+import { loadCaseInputs } from '@/lib/case-inputs';
 import { Button, Skeleton } from '@/components/ui';
 import { fmt } from '@/lib/format';
 import { useRunModel } from '@/lib/run-model';
@@ -18,12 +19,10 @@ export default function BriefPage() {
   const { data } = useJson<RunDetail>(`/api/runs/${id}`);
   const { data: targets } = useJson<TargetWithStatus[]>('/api/targets');
   const [inputs, setInputs] = useState<CaseInputs>(defaultCaseInputs);
+  const workloadId = data?.run.config.workload;
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('bakeoff:case');
-      if (raw) setInputs((d) => ({ ...d, ...JSON.parse(raw) }));
-    } catch {}
-  }, []);
+    if (data) setInputs(loadCaseInputs(workloadId));
+  }, [data == null, workloadId]); // eslint-disable-line react-hooks/exhaustive-deps
   const model = useRunModel(data?.run, data?.results ?? [], targets, inputs);
 
   if (!data || !model) return <div className="mx-auto max-w-[820px] p-10"><Skeleton className="h-[900px]" /></div>;
@@ -46,7 +45,7 @@ export default function BriefPage() {
       <article className="mx-auto max-w-[820px] bg-paper px-12 py-11 shadow-lift print:max-w-none print:px-0 print:py-0 print:shadow-none">
         <header className="flex items-start justify-between border-b-2 border-hero pb-4">
           <div>
-            <div className="text-[12px] font-semibold tracking-[0.12em] text-accent-ink uppercase">Inference bake-off · Ferret SDR workload</div>
+            <div className="text-[12px] font-semibold tracking-[0.12em] text-accent-ink uppercase">Inference bake-off · {workloadMeta(workloadId).name}</div>
             <h1 className="mt-1 text-[24px] leading-tight font-semibold tracking-[-0.02em]">{run.name}</h1>
           </div>
           <div className="tabular text-right text-[12px] leading-relaxed text-ink-3">
@@ -64,7 +63,7 @@ export default function BriefPage() {
         <section className="mt-5 grid grid-cols-3 gap-3">
           <Kpi label="Routed monthly cost" value={fmt.usdShort(bc.routedMonthly)} />
           <Kpi label={bc.baselineTargetId ? `All on ${meta(bc.baselineTargetId).label}` : 'Single-model baseline'} value={fmt.usdShort(bc.baselineMonthly)} />
-          <Kpi label="Monthly volume" value={fmt.compact(totalVolume)} sub={`${inputs.reps} reps × ${inputs.workdays} days`} />
+          <Kpi label="Monthly volume" value={fmt.compact(totalVolume)} sub={`${fmt.int(inputs.reps)} ${workloadMeta(run.config.workload).unit}s × ${inputs.workdays} days`} />
         </section>
 
         <H>Routing by job</H>
@@ -82,10 +81,10 @@ export default function BriefPage() {
           <tbody className="tabular">
             {bc.routes.map((r) => (
               <tr key={r.taskType} className="border-b border-line">
-                <td className="py-1.5 font-medium">{TASK_TYPES[r.taskType].label}</td>
+                <td className="py-1.5 font-medium">{jobInfo(r.taskType).label}</td>
                 <td>{r.pick ? meta(r.pick.targetId).label : <span className="text-warn">No target clears the bar</span>}</td>
                 <td className="text-right">{fmt.score(r.pick?.quality)}</td>
-                <td className="text-right">{fmt.sec(r.pick?.p95)}</td>
+                <td className="text-right">{fmt.sec(r.pick?.p95)}{jobInfo(r.taskType).sloMetric === 'ttft' ? ' (first word)' : ''}</td>
                 <td className="text-right">{fmt.int(r.monthlyVolume)}</td>
                 <td className="text-right font-medium">{fmt.usd(r.pick?.monthlyCost)}</td>
               </tr>
@@ -93,7 +92,7 @@ export default function BriefPage() {
           </tbody>
         </table>
         <p className="mt-1.5 text-[12px] text-ink-4">
-          Rule: cheapest target with quality ≥ {Math.round(inputs.qualityBar * 100)}, p95 under the job’s budget ({bc.routes.map((r) => `${TASK_TYPES[r.taskType].label.toLowerCase()} ${fmt.sec(inputs.sloMs[r.taskType], 0)}`).join(', ')}) and ≥95% success.
+          Rule: cheapest target with quality ≥ {Math.round(inputs.qualityBar * 100)}, p95 under the job’s budget ({bc.routes.map((r) => `${jobInfo(r.taskType).label.toLowerCase()} ${fmt.sec(inputs.sloMs[r.taskType]!, 0)}${jobInfo(r.taskType).sloMetric === 'ttft' ? ' to first word' : ''}`).join(', ')}) and ≥95% success.
         </p>
 
         <H>Every target</H>
@@ -128,7 +127,7 @@ export default function BriefPage() {
           <div>
             <H small>Method</H>
             <p>
-              Four jobs from Ferret, a field sales tool, on 24 fictional accounts with one shared playbook. Latency is timed client-side from the stream, after one warm-up request per target. Quality is half
+              {workloadMeta(workloadId).description} Latency is timed client-side from the stream, after one warm-up request per target. Quality is half
               deterministic checks (format, ground-truth labels, playbook rules) and half an LLM judge (1-5), times success rate. Costs use each provider’s reported token usage and the list prices in the repo’s config.
             </p>
           </div>

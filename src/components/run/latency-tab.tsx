@@ -3,7 +3,7 @@
 import { Gauge } from 'lucide-react';
 import { useState } from 'react';
 import type { ResultRow } from '@/core/types';
-import { TASK_TYPE_ORDER, TASK_TYPES } from '@/core/workload/meta';
+import { TASK_TYPE_ORDER, jobInfo, TASK_TYPES } from '@/core/workload/meta';
 import { LineChart, StripPlot } from '@/components/charts';
 import { ButtonLink, Card, CardHeader, EmptyState, Segmented } from '@/components/ui';
 import { fmt } from '@/lib/format';
@@ -19,7 +19,7 @@ export function LatencyTab({ results, model }: { results: ResultRow[]; model: Ru
   const rows = model.ids.map((id) => {
     const m = model.meta(id);
     const mine = quality.filter((r) => r.targetId === id);
-    const vals = mine.map((r) => ({ ms: (metric === 'ttft' ? r.ttftMs : r.totalMs) ?? NaN, label: TASK_TYPES[r.taskType].label })).filter((v) => Number.isFinite(v.ms));
+    const vals = mine.map((r) => ({ ms: (metric === 'ttft' ? r.ttftMs : r.totalMs) ?? NaN, label: jobInfo(r.taskType).label })).filter((v) => Number.isFinite(v.ms));
     return { id, label: m.label, color: m.color, values: vals, p50: percentile(vals.map((v) => v.ms), 50), p95: percentile(vals.map((v) => v.ms), 95) };
   });
 
@@ -38,10 +38,10 @@ export function LatencyTab({ results, model }: { results: ResultRow[]; model: Ru
       <Card>
         <CardHeader
           title={metric === 'ttft' ? 'Time to first token' : 'Total request time'}
-          subtitle={metric === 'ttft' ? 'How long until the rep sees anything. Thinking models spend part of this reasoning.' : 'Start to last token. What a background job waits on.'}
+          subtitle={metric === 'ttft' ? 'How long until the user sees anything. Thinking models spend part of this reasoning.' : 'Start to last token. What a background job waits on.'}
           action={
             <div className="flex flex-wrap justify-end gap-2">
-              <Segmented size="sm" value={type} onChange={setType} options={[{ value: 'all' as const, label: 'All jobs' }, ...presentTypes.map((t) => ({ value: t, label: TASK_TYPES[t].short }))]} />
+              <Segmented size="sm" value={type} onChange={setType} options={[{ value: 'all' as const, label: 'All jobs' }, ...presentTypes.map((t) => ({ value: t, label: jobInfo(t).short }))]} />
               <Segmented size="sm" value={metric} onChange={setMetric} options={[{ value: 'ttft', label: 'First token' }, { value: 'total', label: 'Total' }]} />
             </div>
           }

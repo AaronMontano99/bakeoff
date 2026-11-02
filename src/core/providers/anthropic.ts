@@ -20,9 +20,10 @@ export async function callAnthropic(target: Target, prompt: Prompt, opts: CallOp
   if (target.apiKeyEnv && !process.env[target.apiKeyEnv]) throw new Error(`${target.label}: ${target.apiKeyEnv} is not set`);
   client ??= new Anthropic({ maxRetries: 0 });
 
+  // The API rejects empty text blocks, and some prompts have no playbook or no system line.
   const system: Anthropic.TextBlockParam[] = [
-    { type: 'text', text: prompt.playbook, ...(target.promptCaching ? { cache_control: { type: 'ephemeral' as const } } : {}) },
-    { type: 'text', text: prompt.system },
+    ...(prompt.playbook ? [{ type: 'text' as const, text: prompt.playbook, ...(target.promptCaching ? { cache_control: { type: 'ephemeral' as const } } : {}) }] : []),
+    ...(prompt.system ? [{ type: 'text' as const, text: prompt.system }] : []),
   ];
 
   const started = performance.now();
@@ -33,7 +34,7 @@ export async function callAnthropic(target: Target, prompt: Prompt, opts: CallOp
     {
       model: target.model,
       max_tokens: opts.maxTokens + 2_000, // headroom for thinking at low effort
-      system,
+      ...(system.length ? { system } : {}),
       messages: [{ role: 'user', content: prompt.user }],
       ...(target.effort ? { output_config: { effort: target.effort } } : {}),
     },

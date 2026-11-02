@@ -5,17 +5,19 @@ import { AlertTriangle, Check, Clock, Copy, Cpu, Gauge, Info, Layers, Play, Scal
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import type { RunConfig, TaskType } from '@/core/types';
-import { TASK_TYPE_ORDER, TASK_TYPES } from '@/core/workload/meta';
+import type { RunConfig, TaskType, WorkloadId } from '@/core/types';
+import { DEFAULT_WORKLOAD, jobsOf, jobInfo, TASK_TYPES, WORKLOAD_ORDER, WORKLOADS } from '@/core/workload/meta';
 import { PageHeader } from '@/components/page';
 import { Badge, Button, Card, cx, Dot, Kbd, Segmented, Skeleton, Stepper, Swatch, Switch } from '@/components/ui';
 import { fmt } from '@/lib/format';
 import { seriesColor } from '@/lib/palette';
 import type { TargetWithStatus } from '@/lib/types-client';
 import { useJson } from '@/lib/use-json';
+import { useWorkload } from '@/lib/use-workload';
 
 type Preset = 'quick' | 'quality' | 'load' | 'custom';
-const TASKS_PER_TYPE = 6;
+/** Without a loaded workload, the fewest dev tasks any job has; the real cap comes from the workload. */
+const TASKS_PER_TYPE = 4;
 
 /** Rough per-request time when there's no history yet, by how the target is deployed. */
 const FALLBACK_MS: Record<string, number> = { local: 35_000, subscription: 9_000, serverless: 3_500, dedicated: 3_000 };
@@ -37,7 +39,12 @@ function NewRun() {
 
   const [preset, setPreset] = useState<Preset>((params.get('preset') as Preset) ?? 'quick');
   const [selected, setSelected] = useState<string[]>([]);
-  const [types, setTypes] = useState<TaskType[]>(TASK_TYPE_ORDER);
+  const [workloadId, setWorkloadId] = useState<WorkloadId>(WORKLOAD_ORDER.includes(params.get('workload') as WorkloadId) ? (params.get('workload') as WorkloadId) : DEFAULT_WORKLOAD);
+  const JOBS = jobsOf(workloadId);
+  const [types, setTypes] = useState<TaskType[]>(JOBS);
+  // Short runs stay on dev tasks, so a UI run never looks at holdout: cap at the fewest dev tasks any job has.
+  const { workload } = useWorkload(workloadId);
+  const devCap = workload ? Math.min(...JOBS.map((j) => workload.tasks.filter((t) => t.type === j && (t.split ?? 'dev') === 'dev').length)) : TASKS_PER_TYPE;
   const [perType, setPerType] = useState(1);
   const [repeats, setRepeats] = useState(1);
   const [loadOn, setLoadOn] = useState(false);
@@ -62,29 +69,37 @@ function NewRun() {
   const applyPreset = useCallback((p: Preset) => {
     setPreset(p);
     if (p === 'quick') {
-      setTypes(TASK_TYPE_ORDER);
+      setTypes(JOBS);
       setPerType(1);
       setRepeats(1);
       setLoadOn(false);
     } else if (p === 'quality') {
-      setTypes(TASK_TYPE_ORDER);
-      setPerType(TASKS_PER_TYPE);
+      setTypes(JOBS);
+      setPerType(devCap);
       setRepeats(1);
       setLoadOn(false);
     } else if (p === 'load') {
-      setTypes(['signal']);
+      // A project lists the job users wait on most first.
+      setTypes([JOBS[0]!]);
       setPerType(2);
       setRepeats(1);
       setLoadOn(true);
       setLevels([1, 4, 8]);
       setLoadRequests(8);
     }
-  }, []);
+  }, [JOBS, devCap]);
 
   useEffect(() => {
     const p = params.get('preset') as Preset | null;
     if (p) applyPreset(p);
-  }, [params, applyPreset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
+
+  const switchWorkload = (w: WorkloadId) => {
+    setWorkloadId(w);
+    setTypes(jobsOf(w));
+    setPerType((n) => Math.min(n, TASKS_PER_TYPE));
+  };
 
   const chosen = visible.filter((t) => selected.includes(t.id));
   const judgeTarget = targets?.find((t) => t.id === judgeId);
@@ -118,8 +133,12 @@ function NewRun() {
     warnings.push({ tone: 'info', text: 'Running side by side shares this laptop’s CPU with the local model. Turn off “side by side” for the cleanest local timing.' });
   if (loadOn && chosen.some((t) => t.deployment === 'subscription') && Math.max(...levels) > 2)
     warnings.push({ tone: 'warn', text: 'High concurrency on Claude Code spends your plan’s usage quickly and spawns a CLI process per request.' });
-  if (chosen.some((t) => t.deployment === 'local') && types.includes('callcard') && perType > 2)
-    warnings.push({ tone: 'info', text: 'Call cards are the longest outputs. On a laptop CPU each one can take a minute or more.' });
+  if (chosen.some((t) => t.deployment === 'local')) {
+    for (const t of types) {
+      const job = jobInfo(t);
+      if (job.localWarning && perType >= (job.localWarningFromTasks ?? 1)) warnings.push({ tone: 'info', text: job.localWarning });
+    }
+  }
 
   const canStart = chosen.length > 0 && types.length > 0 && !submitting && (!judgeOn || judgeTarget?.status.state === 'ready');
 
@@ -127,7 +146,8 @@ function NewRun() {
     if (!canStart) return;
     setSubmitting(true);
     const config: RunConfig = {
-      name: name.trim() || defaultName(preset, chosen.length),
+      name: name.trim() || `${WORKLOADS[workloadId]!.short} · ${defaultName(preset, chosen.length)}`,
+      workload: workloadId,
       targetIds: chosen.map((t) => t.id),
       taskTypes: types,
       tasksPerType: perType,
@@ -211,31 +231,34 @@ function NewRun() {
             )}
           </Section>
 
-          <Section n={2} title="Workload" hint="Ferret’s four AI jobs, on fictional accounts">
+          <Section n={2} title="Workload" hint={WORKLOADS[workloadId]!.description}>
+            <div className="mb-3">
+              <Segmented size="sm" value={workloadId} onChange={(w) => (markCustom(), switchWorkload(w))} options={WORKLOAD_ORDER.map((w) => ({ value: w, label: WORKLOADS[w]!.name }))} />
+            </div>
             <div className="grid grid-cols-[minmax(0,1fr)] gap-2.5 sm:grid-cols-2">
-              {TASK_TYPE_ORDER.map((t) => {
+              {JOBS.map((t) => {
                 const on = types.includes(t);
                 return (
                   <button
                     key={t}
                     onClick={() => {
                       markCustom();
-                      setTypes((s) => (s.includes(t) ? s.filter((x) => x !== t) : TASK_TYPE_ORDER.filter((x) => x === t || s.includes(x))));
+                      setTypes((s) => (s.includes(t) ? s.filter((x) => x !== t) : JOBS.filter((x) => x === t || s.includes(x))));
                     }}
                     className={cx('flex gap-3 rounded-xl border p-3.5 text-left transition', on ? 'border-accent bg-tint/60' : 'border-line hover:border-line-strong')}
                   >
                     <Checkbox on={on} />
                     <div>
-                      <div className="text-[14px] font-medium">{TASK_TYPES[t].label}</div>
-                      <div className="mt-0.5 text-[12.5px] leading-snug text-ink-3">{TASK_TYPES[t].blurb}</div>
+                      <div className="text-[14px] font-medium">{jobInfo(t).label}</div>
+                      <div className="mt-0.5 text-[12.5px] leading-snug text-ink-3">{jobInfo(t).blurb}</div>
                     </div>
                   </button>
                 );
               })}
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-x-8 gap-y-3">
-              <Field label="Tasks per job type" hint={`of ${TASKS_PER_TYPE}`}>
-                <Stepper value={perType} onChange={(v) => (markCustom(), setPerType(v))} min={1} max={TASKS_PER_TYPE} />
+              <Field label="Tasks per job type" hint={`of ${devCap} dev`}>
+                <Stepper value={perType} onChange={(v) => (markCustom(), setPerType(v))} min={1} max={devCap} />
               </Field>
               <Field label="Repeats" hint="for variance">
                 <Stepper value={repeats} onChange={(v) => (markCustom(), setRepeats(v))} min={1} max={5} />

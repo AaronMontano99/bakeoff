@@ -3,10 +3,10 @@
 import { motion } from 'motion/react';
 import { ArrowRight, Check, Cpu, Gauge, History, ListChecks, Play, Sparkles, Timer, Trophy, Wallet, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { defaultCaseInputs } from '@/core/analysis';
 import type { TaskType } from '@/core/types';
-import { TASK_TYPE_ORDER, TASK_TYPES } from '@/core/workload/meta';
+import { jobsOf, TASK_TYPE_ORDER, jobInfo, TASK_TYPES, workloadMeta } from '@/core/workload/meta';
 import { FrontierChart, Meter, ScoreRing, shortLabel, SpeedBars } from '@/components/charts';
 import { PageHeader, StatusBadge } from '@/components/page';
 import { Badge, ButtonLink, Card, CardHeader, cx, Dot, Progress, Skeleton, Stat, Swatch } from '@/components/ui';
@@ -14,6 +14,7 @@ import { fmt } from '@/lib/format';
 import { useRunModel, type RunModel } from '@/lib/run-model';
 import type { RunDetail, RunListItem, TargetWithStatus } from '@/lib/types-client';
 import { useJson } from '@/lib/use-json';
+import { jobsOf as jobsOfWorkload, WORKLOADS, WORKLOAD_ORDER } from '@/core/workload/meta';
 
 export default function Overview() {
   const { data: runs, loading } = useJson<RunListItem[]>('/api/runs', { refreshMs: 5_000 });
@@ -69,7 +70,7 @@ function RunningBanner({ run }: { run: RunListItem }) {
 
 function LatestRun({ id, targets }: { id: string; targets: TargetWithStatus[] | null }) {
   const { data } = useJson<RunDetail>(`/api/runs/${id}`);
-  const [inputs] = useState(defaultCaseInputs);
+  const inputs = useMemo(() => defaultCaseInputs(data?.run.config.workload), [data?.run.config.workload]);
   const model = useRunModel(data?.run, data?.results ?? [], targets, inputs);
   if (!model || !data) return <Skeleton className="h-[480px]" />;
   const { summaries, meta, frontierIds, bc } = model;
@@ -91,7 +92,7 @@ function LatestRun({ id, targets }: { id: string; targets: TargetWithStatus[] | 
           icon={<Gauge className="size-3.5" />}
           label="Monthly, routed"
           value={bc.routedMonthly != null ? fmt.usdShort(bc.routedMonthly) : '—'}
-          sub={bc.savingsPct != null && bc.savingsPct > 0.01 ? `${Math.round(bc.savingsPct * 100)}% under one-model-for-all` : `${inputs.reps} reps · ${inputs.workdays} workdays`}
+          sub={bc.savingsPct != null && bc.savingsPct > 0.01 ? `${Math.round(bc.savingsPct * 100)}% under one-model-for-all` : `${fmt.int(inputs.reps)} ${workloadMeta(data.run.config.workload).unit}s · ${inputs.workdays} days`}
         />
       </div>
 
@@ -182,7 +183,7 @@ function JobBoard({ model, types }: { model: RunModel; types: TaskType[] }) {
         {cols.map(({ t, rows }) => (
           <div key={t} className="glass snap-start rounded-2xl border border-line p-3 shadow-card">
             <div className="flex items-baseline justify-between gap-2 px-1.5 pb-2.5">
-              <h3 className="truncate text-[14.5px] font-semibold">{TASK_TYPES[t].label}</h3>
+              <h3 className="truncate text-[14.5px] font-semibold">{jobInfo(t).label}</h3>
               <span className="tabular shrink-0 text-[12.5px] text-ink-3">{rows.length}</span>
             </div>
             <div className="space-y-1">
@@ -251,7 +252,7 @@ function Onboarding({ targets, running }: { targets: TargetWithStatus[] | null; 
       body: targets == null ? 'Checking what can run on this machine…' : ready.length ? `${ready.length} ready: ${ready.map((t) => t.label).join(', ')}.` : 'Start Ollama or log in to Claude Code, or add an API key.',
       href: '/targets',
     },
-    { icon: ListChecks, title: 'Workload', done: true, body: `24 real Ferret tasks across ${TASK_TYPE_ORDER.map((t) => TASK_TYPES[t].label.toLowerCase()).join(', ')}.`, href: '/workload' },
+    { icon: ListChecks, title: 'Workload', done: true, body: `${WORKLOAD_ORDER.map((w) => `${WORKLOADS[w]!.short} (${jobsOfWorkload(w).length} jobs)`).join(', ')}, with tasks that keep each job's real traffic shape.`, href: '/workload' },
     { icon: Timer, title: 'Run', done: false, body: 'Every task on every target, measured for speed, quality and cost, then judged.', href: '/runs/new' },
   ];
   return (
@@ -263,7 +264,7 @@ function Onboarding({ targets, running }: { targets: TargetWithStatus[] | null; 
             How fast, how good, and how expensive is AI <span className="text-accent-ink">on your real workload?</span>
           </h1>
           <p className="mt-5 max-w-2xl text-[16.5px] leading-relaxed text-ink-2">
-            Bakeoff takes the AI jobs from Ferret, a sales tool used every day in the field, and runs them against local, subscription and hosted models. It measures time to first token,
+            Bakeoff takes the AI jobs from a real app and runs them against local, subscription and hosted models. It measures time to first token,
             latency under load, cost per request and graded quality, then turns the numbers into a routing recommendation and a monthly business case.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">

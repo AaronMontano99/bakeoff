@@ -8,7 +8,7 @@ import type { CallOptions } from './index';
 /**
  * Claude through the Claude Code CLI (`claude -p`), on whatever claude.ai
  * login this machine has. No API key, no per-call bill. Same isolation as
- * Ferret: no user settings, no MCP, no tools, no saved session, an empty
+ * the app: no user settings, no MCP, no tools, no saved session, an empty
  * working directory, and ANTHROPIC_API_KEY stripped so it can't silently
  * switch to API billing.
  *
@@ -41,7 +41,8 @@ export async function callClaudeCli(target: Target, prompt: Prompt, opts: CallOp
     '--verbose',
     '--include-partial-messages',
     '--model', target.model,
-    '--system-prompt', `${prompt.playbook}\n\n${prompt.system}`,
+    // Always replace the CLI's own system prompt; an app that sends none gets a one-line neutral one.
+    '--system-prompt', [prompt.playbook, prompt.system].filter(Boolean).join('\n\n') || "Follow the user's instructions exactly.",
     '--tools', '',
     '--setting-sources', '',
     '--strict-mcp-config',

@@ -3,6 +3,7 @@ import { businessCase, defaultCaseInputs, summarize } from '@/core/analysis';
 import { listResults, listRuns } from '@/core/db';
 import { startRun } from '@/core/runner';
 import { loadTargets } from '@/core/targets';
+import { jobsOf } from '@/core/workload/meta';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +13,7 @@ export async function GET() {
     if (run.status !== 'done') return { ...run, headline: null, best: null };
     const sums = summarize(listResults(run.id), run.config.targetIds);
     const best = [...sums].sort((a, b) => (b.quality ?? 0) - (a.quality ?? 0))[0];
-    return { ...run, headline: businessCase(sums, targets, defaultCaseInputs()).headline, best: best ? { targetId: best.targetId, quality: best.quality } : null };
+    return { ...run, headline: businessCase(sums, targets, defaultCaseInputs(run.config.workload)).headline, best: best ? { targetId: best.targetId, quality: best.quality } : null };
   });
   return Response.json(runs);
 }
@@ -20,7 +21,8 @@ export async function GET() {
 const RunConfigSchema = z.object({
   name: z.string().min(1).max(120),
   targetIds: z.array(z.string()).min(1),
-  taskTypes: z.array(z.enum(['signal', 'debrief', 'email', 'callcard'])).min(1),
+  workload: z.string().optional(),
+  taskTypes: z.array(z.string()).min(1),
   tasksPerType: z.number().int().min(1).max(50),
   repeats: z.number().int().min(1).max(10),
   concurrency: z.array(z.number().int().min(1).max(64)).max(6),
@@ -32,5 +34,8 @@ const RunConfigSchema = z.object({
 export async function POST(req: Request) {
   const parsed = RunConfigSchema.safeParse(await req.json());
   if (!parsed.success) return Response.json({ error: parsed.error.issues[0]?.message ?? 'Invalid run config' }, { status: 400 });
+  const known = jobsOf(parsed.data.workload);
+  const unknown = parsed.data.taskTypes.filter((t) => !known.includes(t));
+  if (unknown.length) return Response.json({ error: `Not a job in this workload: ${unknown.join(', ')}` }, { status: 400 });
   return Response.json({ id: startRun(parsed.data) });
 }

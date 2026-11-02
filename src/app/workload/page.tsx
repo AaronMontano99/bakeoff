@@ -2,17 +2,33 @@
 
 import { AnimatePresence, motion } from 'motion/react';
 import { BookText, ChevronRight, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { TASK_TYPE_ORDER, TASK_TYPES } from '@/core/workload/meta';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import type { WorkloadId } from '@/core/types';
+import { DEFAULT_WORKLOAD, jobInfo, jobsOf, WORKLOAD_ORDER, WORKLOADS } from '@/core/workload/meta';
 import { PageHeader } from '@/components/page';
-import { Badge, Card, Skeleton } from '@/components/ui';
+import { Badge, Card, Segmented, Skeleton } from '@/components/ui';
 import { fmt } from '@/lib/format';
-import { useWorkload, type WorkloadData } from '@/lib/use-workload';
+import { taskSubtitle, useWorkload, type WorkloadData } from '@/lib/use-workload';
 
 type T = WorkloadData['tasks'][number];
 
 export default function WorkloadPage() {
-  const { workload } = useWorkload();
+  return (
+    <Suspense>
+      <Workload />
+    </Suspense>
+  );
+}
+
+function Workload() {
+  const params = useSearchParams();
+  const router = useRouter();
+  const id: WorkloadId = WORKLOAD_ORDER.includes(params.get('w') as WorkloadId) ? (params.get('w') as WorkloadId) : DEFAULT_WORKLOAD;
+  const { workload } = useWorkload(id);
+  const JOBS = jobsOf(id);
+  const meta = WORKLOADS[id]!;
+  const sharedPrompt = workload?.tasks.find((t) => t.prompt.playbook)?.prompt.playbook;
   const [open, setOpen] = useState<T | null>(null);
   const [showPlaybook, setShowPlaybook] = useState(false);
 
@@ -29,20 +45,24 @@ export default function WorkloadPage() {
         description={workload?.description ?? 'Loading…'}
         actions={
           <button onClick={() => setShowPlaybook(true)} className="inline-flex h-9 items-center gap-2 rounded-control border border-line bg-mist px-3.5 text-sm font-medium shadow-card hover:bg-mist">
-            <BookText className="size-4" /> Read the shared playbook
+            <BookText className="size-4" /> {meta.sharedPrompt.button}
           </button>
         }
       />
 
+      <div className="mb-4">
+        <Segmented value={id} onChange={(w) => (setOpen(null), router.replace(`/workload?w=${w}`))} options={WORKLOAD_ORDER.map((w) => ({ value: w, label: WORKLOADS[w]!.name }))} />
+      </div>
+
       <div className="grid gap-3 sm:grid-cols-2">
-        {TASK_TYPE_ORDER.map((t) => (
+        {JOBS.map((t) => (
           <Card key={t} className="p-5">
             <div className="flex items-center justify-between">
-              <h3 className="text-[15px] font-semibold">{TASK_TYPES[t].label}</h3>
-              <Badge tone="green">p95 budget {fmt.sec(TASK_TYPES[t].defaultSloMs, 0)}</Badge>
+              <h3 className="text-[15px] font-semibold">{jobInfo(t).label}</h3>
+              <Badge tone="green">{jobInfo(t).sloMetric === 'ttft' ? 'first word' : 'p95'} budget {fmt.sec(jobInfo(t).defaultSloMs, 0)}</Badge>
             </div>
-            <p className="mt-1.5 text-[13.5px] text-ink-2">{TASK_TYPES[t].blurb}</p>
-            <p className="mt-2 text-[12.5px] leading-relaxed text-ink-3">{TASK_TYPES[t].profile}</p>
+            <p className="mt-1.5 text-[13.5px] text-ink-2">{jobInfo(t).blurb}</p>
+            <p className="mt-2 text-[12.5px] leading-relaxed text-ink-3">{jobInfo(t).profile}</p>
           </Card>
         ))}
       </div>
@@ -51,18 +71,22 @@ export default function WorkloadPage() {
         {!workload ? (
           <Skeleton className="h-96" />
         ) : (
-          TASK_TYPE_ORDER.map((type) => (
+          JOBS.map((type) => (
             <section key={type}>
-              <h2 className="mb-2 text-[13px] font-semibold tracking-wide text-ink-2 uppercase">{TASK_TYPES[type].label}</h2>
+              <h2 className="mb-2 text-[13px] font-semibold tracking-wide text-ink-2 uppercase">{jobInfo(type).label}</h2>
               <Card className="divide-y divide-line overflow-hidden">
                 {workload.tasks.filter((t) => t.type === type).map((t) => (
                   <button key={t.id} onClick={() => setOpen(t)} className="group flex w-full items-center gap-3 px-5 py-3 text-left transition hover:bg-mist/50">
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-[14px] font-medium">{t.title}</div>
-                      <div className="truncate text-[12.5px] text-ink-3">{t.account.industry} · {t.account.city}</div>
+                      <div className="truncate text-[12.5px] text-ink-3">{taskSubtitle(t)}</div>
                     </div>
-                    {t.gold?.signalStatus && <Badge tone="green">{t.gold.signalStatus}</Badge>}
-                    {t.gold?.outcome && <Badge tone="green">{t.gold.outcome.replace(/_/g, ' ')}</Badge>}
+                    {t.split === 'holdout' && <Badge>holdout</Badge>}
+                    {t.gold?.expectProposal === true && <Badge tone="green">proposal</Badge>}
+                    {t.gold?.decline === true && <Badge tone="warn">off-topic</Badge>}
+                    {meta.expected?.(t).slice(0, 2).map((e) => (
+                      <Badge key={e} tone="green">{e}</Badge>
+                    ))}
                     <ChevronRight className="size-4 text-ink-4 transition group-hover:translate-x-0.5 group-hover:text-ink" />
                   </button>
                 ))}
@@ -72,22 +96,30 @@ export default function WorkloadPage() {
         )}
       </div>
 
-      <Drawer open={!!open || showPlaybook} onClose={() => (setOpen(null), setShowPlaybook(false))} title={showPlaybook ? 'Shared rep playbook' : open?.title ?? ''}>
+      <Drawer open={!!open || showPlaybook} onClose={() => (setOpen(null), setShowPlaybook(false))} title={showPlaybook ? meta.sharedPrompt.title : open?.title ?? ''}>
         {showPlaybook ? (
           <>
-            <p className="mb-3 text-[13px] text-ink-3">Sent first on every request, byte-for-byte identical. That makes it the prompt-caching candidate: targets with caching on read it from cache after the first call.</p>
-            <pre className="font-mono text-[12px] leading-relaxed whitespace-pre-wrap text-ink-2">{workload?.tasks[0]?.prompt.playbook}</pre>
+            <p className="mb-3 text-[13px] text-ink-3">
+              {meta.sharedPrompt.note}
+            </p>
+            <pre className="font-mono text-[12px] leading-relaxed whitespace-pre-wrap text-ink-2">{sharedPrompt}</pre>
           </>
         ) : open ? (
           <div className="space-y-4">
             <div className="flex flex-wrap gap-1.5">
-              <Badge tone="dark">{TASK_TYPES[open.type].label}</Badge>
-              {open.gold?.signalStatus && <Badge tone="green">Expected: {open.gold.signalStatus}</Badge>}
-              {open.gold?.outcome && <Badge tone="green">Expected: {open.gold.outcome.replace(/_/g, ' ')}</Badge>}
-              {open.gold?.meetingAsked != null && <Badge>asked {String(open.gold.meetingAsked)} · booked {String(open.gold.meetingBooked)}</Badge>}
+              <Badge tone="dark">{jobInfo(open.type).label}</Badge>
+              {meta.expected?.(open).map((e) => (
+                <Badge key={e} tone="green">{e}</Badge>
+              ))}
             </div>
+            {meta.showGold && open.gold && Object.keys(open.gold).length > 0 && (
+              <div>
+                <div className="mb-1 text-[12px] font-semibold tracking-wide text-ink-4 uppercase">What the checks look for</div>
+                <pre className="rounded-xl bg-mist p-3.5 font-mono text-[12px] leading-relaxed whitespace-pre-wrap text-ink-2">{JSON.stringify(open.gold, null, 2)}</pre>
+              </div>
+            )}
             <div>
-              <div className="mb-1 text-[12px] font-semibold tracking-wide text-ink-4 uppercase">User message (after the playbook)</div>
+              <div className="mb-1 text-[12px] font-semibold tracking-wide text-ink-4 uppercase">{open.prompt.playbook ? 'User message (after the shared prompt)' : 'The whole prompt (the app sends no system prompt)'}</div>
               <pre className="rounded-xl bg-mist p-3.5 font-mono text-[12px] leading-relaxed whitespace-pre-wrap text-ink-2">{open.prompt.user}</pre>
             </div>
           </div>

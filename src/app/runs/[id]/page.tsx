@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { defaultCaseInputs, type CaseInputs } from '@/core/analysis';
+import type { CaseInputs } from '@/core/analysis';
+import { loadCaseInputs, saveCaseInputs } from '@/lib/case-inputs';
 import { StatusBadge } from '@/components/page';
 import { CaseTab } from '@/components/run/case-tab';
 import { DecisionTab } from '@/components/run/decision-tab';
@@ -19,6 +20,7 @@ import { useRunModel } from '@/lib/run-model';
 import type { TargetWithStatus } from '@/lib/types-client';
 import { useJson } from '@/lib/use-json';
 import { useRunLive } from '@/lib/use-run-live';
+import { DEFAULT_WORKLOAD } from '@/core/workload/meta';
 
 type Tab = 'live' | 'overview' | 'latency' | 'outputs' | 'case' | 'decision';
 const ACTIVE = ['queued', 'running', 'judging'];
@@ -37,7 +39,15 @@ function RunView() {
   const params = useSearchParams();
   const { run, results, setResults, lanes, detail, error } = useRunLive(id);
   const { data: targets } = useJson<TargetWithStatus[]>('/api/targets');
-  const [inputs, setInputs] = useState<CaseInputs>(() => loadInputs());
+  const [inputs, setInputs] = useState<CaseInputs>(() => loadCaseInputs(undefined));
+  // Each workload keeps its own assumptions; switch to this run's once it has loaded.
+  const workloadId = run?.config.workload;
+  const [inputsFor, setInputsFor] = useState<string | null>(null);
+  useEffect(() => {
+    if (!run) return;
+    setInputs(loadCaseInputs(workloadId));
+    setInputsFor(workloadId ?? DEFAULT_WORKLOAD);
+  }, [run == null, workloadId]); // eslint-disable-line react-hooks/exhaustive-deps
   const model = useRunModel(run ?? undefined, results, targets, inputs);
   const active = !!run && ACTIVE.includes(run.status);
 
@@ -69,10 +79,8 @@ function RunView() {
   }, [active]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('bakeoff:case', JSON.stringify(inputs));
-    } catch {}
-  }, [inputs]);
+    if (inputsFor) saveCaseInputs(workloadId, inputs);
+  }, [inputs]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Elapsed clock while running.
   const [, tick] = useState(0);
@@ -186,9 +194,9 @@ function RunView() {
         ) : tab === 'outputs' ? (
           <OutputsTab run={run} results={results} setResults={setResults} model={model} />
         ) : tab === 'decision' ? (
-          <DecisionTab results={results} model={model} inputs={inputs} targets={targets ?? []} />
+          <DecisionTab results={results} model={model} inputs={inputs} targets={targets ?? []} workloadId={workloadId} />
         ) : (
-          <CaseTab runId={run.id} model={model} inputs={inputs} setInputs={setInputs} targets={targets ?? []} />
+          <CaseTab runId={run.id} model={model} inputs={inputs} setInputs={setInputs} targets={targets ?? []} workloadId={workloadId} />
         )}
       </div>
     </div>
@@ -199,14 +207,3 @@ function plural(n: number, word: string) {
   return `${n} ${word}${n === 1 ? '' : 's'}`;
 }
 
-function loadInputs(): CaseInputs {
-  const d = defaultCaseInputs();
-  try {
-    const raw = typeof window !== 'undefined' ? localStorage.getItem('bakeoff:case') : null;
-    if (raw) {
-      const saved = JSON.parse(raw) as Partial<CaseInputs>;
-      return { ...d, ...saved, perRepPerDay: { ...d.perRepPerDay, ...saved.perRepPerDay }, sloMs: { ...d.sloMs, ...saved.sloMs } };
-    }
-  } catch {}
-  return d;
-}

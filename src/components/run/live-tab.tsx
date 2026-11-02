@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Check, CircleAlert, Flame, Loader2 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import type { ResultRow, RunRow } from '@/core/types';
-import { TASK_TYPES } from '@/core/workload/meta';
+import { jobInfo, TASK_TYPES } from '@/core/workload/meta';
 import { Sparkline } from '@/components/charts';
 import { Badge, cx, Swatch } from '@/components/ui';
 import { fmt } from '@/lib/format';
@@ -15,7 +15,7 @@ import { median } from '@/lib/median';
 
 /** The race view: one lane per target, responses streaming in as they're generated. */
 export function LiveTab({ run, results, lanes, model }: { run: RunRow; results: ResultRow[]; lanes: Record<string, Lane>; model: RunModel }) {
-  const { task } = useWorkload();
+  const { task } = useWorkload(run.config.workload);
   const perTarget = run.config.taskTypes.length * run.config.tasksPerType * run.config.repeats;
   const recent = [...results].reverse().slice(0, 8);
 
@@ -106,7 +106,7 @@ export function LiveTab({ run, results, lanes, model }: { run: RunRow; results: 
                   {r.phase !== 'quality' && <Badge className="mr-1.5">{r.phase === 'load' ? `load ×${r.concurrency}` : 'warm-up'}</Badge>}
                   {task(r.taskId)?.title ?? r.taskId}
                 </span>
-                <span className="tabular hidden w-20 text-right text-ink-3 sm:block">{TASK_TYPES[r.taskType].label}</span>
+                <span className="tabular hidden w-20 text-right text-ink-3 sm:block">{jobInfo(r.taskType).label}</span>
                 <span className="tabular w-16 text-right font-medium">{r.ok ? fmt.sec(r.totalMs) : 'failed'}</span>
               </motion.div>
             ))}

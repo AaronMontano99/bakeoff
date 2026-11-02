@@ -5,14 +5,14 @@ import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetState
 import { toast } from 'sonner';
 import { extractJson } from '@/core/json';
 import type { ResultRow, RunRow, TaskType } from '@/core/types';
-import { TASK_TYPE_ORDER, TASK_TYPES } from '@/core/workload/meta';
+import { TASK_TYPE_ORDER, jobInfo, workloadMeta, TASK_TYPES } from '@/core/workload/meta';
 import { Badge, Card, cx, Kbd, Swatch } from '@/components/ui';
 import { fmt } from '@/lib/format';
 import type { RunModel } from '@/lib/run-model';
-import { useWorkload } from '@/lib/use-workload';
+import { taskSubtitle, useWorkload } from '@/lib/use-workload';
 
 export function OutputsTab({ run, results, setResults, model }: { run: RunRow; results: ResultRow[]; setResults: Dispatch<SetStateAction<ResultRow[]>>; model: RunModel }) {
-  const { task } = useWorkload();
+  const { task } = useWorkload(run.config.workload);
   const quality = useMemo(() => results.filter((r) => r.phase === 'quality'), [results]);
   const taskIds = useMemo(() => {
     const ids = [...new Set(quality.map((r) => r.taskId))];
@@ -83,7 +83,7 @@ export function OutputsTab({ run, results, setResults, model }: { run: RunRow; r
           <div className="max-h-[70vh] overflow-y-auto p-2 scrollbar-thin">
             {TASK_TYPE_ORDER.filter((tt) => run.config.taskTypes.includes(tt)).map((tt) => (
               <div key={tt} className="mb-1">
-                <div className="px-2.5 pt-2 pb-1 text-[12px] font-semibold tracking-wide text-ink-4 uppercase">{TASK_TYPES[tt].label}</div>
+                <div className="px-2.5 pt-2 pb-1 text-[12px] font-semibold tracking-wide text-ink-4 uppercase">{jobInfo(tt).label}</div>
                 {taskIds
                   .filter((id) => quality.find((r) => r.taskId === id)?.taskType === tt)
                   .map((id) => {
@@ -117,14 +117,14 @@ export function OutputsTab({ run, results, setResults, model }: { run: RunRow; r
           {t && (
             <Card className="p-5">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge tone="dark">{TASK_TYPES[t.type].label}</Badge>
-                {t.gold?.signalStatus && <Badge tone="green">Answer: {t.gold.signalStatus}</Badge>}
-                {t.gold?.outcome && <Badge tone="green">Answer: {t.gold.outcome.replace(/_/g, ' ')}</Badge>}
-                {t.gold?.meetingAsked != null && <Badge>meeting asked: {String(t.gold.meetingAsked)}</Badge>}
+                <Badge tone="dark">{jobInfo(t.type).label}</Badge>
+                {workloadMeta(jobInfo(t.type).workload).expected?.(t).map((e) => (
+                  <Badge key={e} tone="green">{e}</Badge>
+                ))}
               </div>
               <h2 className="mt-2.5 text-[18px] font-semibold tracking-[-0.01em]">{t.title}</h2>
               <p className="mt-1 text-[13.5px] text-ink-3">
-                {t.account.company} · {t.account.industry} · {t.account.contact.name}, {t.account.contact.title}
+                {workloadMeta(jobInfo(t.type).workload).taskDetail?.(t) ?? taskSubtitle(t)}
               </p>
               <details className="group mt-3">
                 <summary className="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-accent-ink hover:text-accent-ink">
@@ -149,7 +149,9 @@ export function OutputsTab({ run, results, setResults, model }: { run: RunRow; r
 function OutputCard({ r, model, type, focused, onFocus, onGrade, repeatLabel }: { r: ResultRow; model: RunModel; type: TaskType; focused: boolean; onFocus: () => void; onGrade: (s: number | null) => void; repeatLabel?: string }) {
   const [raw, setRaw] = useState(false);
   const m = model.meta(r.targetId);
-  const parsed = r.output ? (extractJson(r.output) as Record<string, unknown> | null) : null;
+  // Prose jobs are shown as the user would read them, not mined for JSON.
+  const prose = jobInfo(type).output === 'text';
+  const parsed = r.output && !prose ? (extractJson(r.output) as Record<string, unknown> | null) : null;
   return (
     <div onClick={onFocus} className={cx('flex flex-col glass rounded-2xl border shadow-card transition', focused ? 'border-accent ring-2 ring-accent/20' : 'border-line')}>
       <div className="flex items-center gap-2 border-b border-line px-4 py-3">
@@ -166,10 +168,12 @@ function OutputCard({ r, model, type, focused, onFocus, onGrade, repeatLabel }: 
       <div className="flex-1 px-4 py-3.5">
         {!r.ok ? (
           <div className="rounded-xl bg-bad-tint p-3 text-[13px] text-bad">{r.error}</div>
+        ) : prose && !raw ? (
+          <Prose text={r.output ?? ''} />
         ) : raw || !parsed ? (
           <pre className="max-h-80 overflow-y-auto font-mono text-[12px] leading-relaxed whitespace-pre-wrap text-ink-2 scrollbar-thin">{r.output}</pre>
         ) : (
-          <Pretty type={type} o={parsed} />
+          <Answer value={parsed} />
         )}
       </div>
 
@@ -226,6 +230,11 @@ function OutputCard({ r, model, type, focused, onFocus, onGrade, repeatLabel }: 
   );
 }
 
+/** A prose answer, as the user would read it. */
+function Prose({ text }: { text: string }) {
+  return <div className="text-[13.5px] leading-relaxed whitespace-pre-wrap">{text}</div>;
+}
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
@@ -237,54 +246,38 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const s = (v: unknown) => (typeof v === 'string' ? v : v == null ? '' : JSON.stringify(v));
 
-function Pretty({ type, o }: { type: TaskType; o: Record<string, unknown> }) {
-  switch (type) {
-    case 'signal':
-      return (
-        <div className="space-y-3">
-          <Badge tone={s(o.signalStatus).startsWith('HARD') ? 'green' : s(o.signalStatus).startsWith('SOFT') ? 'warn' : 'neutral'}>{s(o.signalStatus) || 'No label'}</Badge>
-          <Field label="Why now">{s(o.whyNow)}</Field>
-          <Field label="Evidence">{s(o.evidence)}</Field>
-        </div>
-      );
-    case 'debrief':
-      return (
-        <div className="space-y-3">
-          <div className="flex flex-wrap gap-1.5">
-            <Badge tone="dark">{s(o.outcome).replace(/_/g, ' ') || 'no outcome'}</Badge>
-            <Badge>asked: {String(o.meetingAsked)}</Badge>
-            <Badge>booked: {String(o.meetingBooked)}</Badge>
+function fieldLabel(key: string): string {
+  const words = key.replace(/[_-]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/** Any structured answer, drawn from its own shape so every project's output reads cleanly. */
+function Answer({ value }: { value: unknown }) {
+  if (typeof value === 'boolean') return <Badge>{value ? 'Yes' : 'No'}</Badge>;
+  if (Array.isArray(value)) {
+    if (value.every((v) => typeof v !== 'object' || v === null)) {
+      return <ul className="list-disc space-y-0.5 pl-4">{value.map((v, i) => <li key={i}>{s(v)}</li>)}</ul>;
+    }
+    return (
+      <div className="divide-y divide-line overflow-hidden rounded-xl border border-line">
+        {value.map((v, i) => (
+          <div key={i} className="px-3 py-2">
+            <Answer value={v} />
           </div>
-          <Field label="Summary">{s(o.summary)}</Field>
-          <Field label="Next step">{s(o.nextStep)}</Field>
-          {Array.isArray(o.crmNotes) && (
-            <Field label="CRM notes">
-              <ul className="list-disc space-y-0.5 pl-4">{o.crmNotes.map((n, i) => <li key={i}>{s(n)}</li>)}</ul>
-            </Field>
-          )}
-        </div>
-      );
-    case 'email':
-      return (
-        <div className="overflow-hidden rounded-xl border border-line">
-          <div className="border-b border-line bg-mist/60 px-3 py-2 text-[12.5px]">
-            <span className="text-ink-4">Subject </span>
-            <span className="font-medium">{s(o.subject)}</span>
-            <Badge className="ml-2">{s(o.ctaType) || 'cta?'}</Badge>
-          </div>
-          <div className="px-3 py-2.5 text-[13.5px] leading-relaxed whitespace-pre-wrap">{s(o.body)}</div>
-        </div>
-      );
-    case 'callcard':
-      return (
-        <div className="space-y-3">
-          <Field label="Opening">“{s(o.opening)}”</Field>
-          <Field label="Primary question">{s(o.primaryQuestion)}</Field>
-          <Field label="Angle">{s(o.angle)}</Field>
-          <Field label="Meeting ask">{s(o.meetingAsk)}</Field>
-          <Field label="Voicemail">{s(o.voicemail)}</Field>
-          <Field label="If no answer">{s(o.ifNoAnswer)}</Field>
-        </div>
-      );
+        ))}
+      </div>
+    );
   }
+  if (value && typeof value === 'object') {
+    return (
+      <div className="space-y-3">
+        {Object.entries(value).map(([k, v]) => (
+          <Field key={k} label={fieldLabel(k)}>
+            <Answer value={v} />
+          </Field>
+        ))}
+      </div>
+    );
+  }
+  return <>{s(value)}</>;
 }

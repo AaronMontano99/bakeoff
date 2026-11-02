@@ -1,7 +1,7 @@
 import { quality, stats } from './analysis';
 import { mean, percentile, sum } from './stats';
 import type { ResultRow, Target, Task, TaskType } from './types';
-import { TASK_TYPE_ORDER, TASK_TYPES } from './workload/meta';
+import { jobInfo, sloName, sloP95, TASK_TYPE_ORDER, TASK_TYPES, workloadMeta } from './workload/meta';
 
 /**
  * The decision engine. The business case answers "what looks cheapest on the
@@ -38,8 +38,9 @@ export function defaultPolicy(): Policy {
   const sloMs = {} as Record<TaskType, number>;
   const monthlyVolume = {} as Record<TaskType, number>;
   for (const t of TASK_TYPE_ORDER) {
-    sloMs[t] = TASK_TYPES[t].defaultSloMs;
-    monthlyVolume[t] = 10 * 21 * TASK_TYPES[t].defaultPerRepPerDay;
+    const w = workloadMeta(jobInfo(t).workload);
+    sloMs[t] = jobInfo(t).defaultSloMs;
+    monthlyVolume[t] = w.defaultUnits * w.defaultDays * jobInfo(t).defaultPerRepPerDay;
   }
   return { qualityBar: 0.8, sloMs, minOkRate: 0.95, margin: 0.05, confidence: 0.9, resamples: 2000, seed: 7, monthlyVolume };
 }
@@ -185,7 +186,8 @@ export function decide(results: ResultRow[], tasks: Task[], targets: Target[], p
       else if (q && q.estimate >= policy.qualityBar) confidence = 'tentative';
       if (confidence === 'fails') why.push(`quality ${q ? Math.round(q.estimate * 100) : 'n/a'} under the ${Math.round(policy.qualityBar * 100)} bar`);
       if (confidence === 'tentative') why.push(`average clears the bar but the low end (${Math.round(q!.low * 100)}) doesn't`);
-      if (st.totalP95 == null || st.totalP95 > policy.sloMs[t]) why.push(`p95 ${st.totalP95 == null ? 'n/a' : (st.totalP95 / 1000).toFixed(1) + 's'} over the ${(policy.sloMs[t] / 1000).toFixed(0)}s budget`);
+      const p95 = sloP95(st, t);
+      if (p95 == null || p95 > policy.sloMs[t]!) why.push(`${sloName(t)} ${p95 == null ? 'n/a' : (p95 / 1000).toFixed(1) + 's'} over the ${(policy.sloMs[t]! / 1000).toFixed(0)}s budget`);
       if (st.okRate < policy.minOkRate) why.push(`${Math.round((1 - st.okRate) * 100)}% of requests failed`);
       if (st.costPerRequest == null) why.push('no price');
       candidates.push({
@@ -195,7 +197,7 @@ export function decide(results: ResultRow[], tasks: Task[], targets: Target[], p
         qualityLow: q?.low ?? null,
         qualityHigh: q?.high ?? null,
         checksOnly: mean([...perTask(rows, rowChecks).values()]),
-        p95: st.totalP95,
+        p95,
         okRate: st.okRate,
         costPerRequest: st.costPerRequest,
         confidence,
@@ -263,7 +265,7 @@ export function decide(results: ResultRow[], tasks: Task[], targets: Target[], p
       n: new Set(rows.map((r) => r.taskId)).size,
       quality: mean([...perTask(rows, rowQuality).values()]),
       checksOnly: mean([...perTask(rows, rowChecks).values()]),
-      p95: st.totalP95,
+      p95: sloP95(st, t),
       costPerRequest: st.costPerRequest,
     };
   };
@@ -274,7 +276,7 @@ export function decide(results: ResultRow[], tasks: Task[], targets: Target[], p
     if (!pick.n) why.push('no holdout answers');
     else {
       if ((pick.quality ?? 0) < policy.qualityBar) why.push(`quality fell to ${Math.round((pick.quality ?? 0) * 100)}`);
-      if (pick.p95 == null || pick.p95 > policy.sloMs[j.taskType]) why.push(`p95 ${pick.p95 == null ? 'n/a' : (pick.p95 / 1000).toFixed(1) + 's'} over budget`);
+      if (pick.p95 == null || pick.p95 > policy.sloMs[j.taskType]!) why.push(`${sloName(j.taskType)} ${pick.p95 == null ? 'n/a' : (pick.p95 / 1000).toFixed(1) + 's'} over budget`);
     }
     return { taskType: j.taskType, pick, baseline: side(baselineTargetId, j.taskType), held: why.length === 0, why };
   });
@@ -284,7 +286,7 @@ export function decide(results: ResultRow[], tasks: Task[], targets: Target[], p
     routed.map((j) => {
       const p = perTask(hold.filter((r) => r.targetId === j.pick!.targetId && r.taskType === j.taskType), score);
       const b = perTask(hold.filter((r) => r.targetId === baselineTargetId && r.taskType === j.taskType), score);
-      return { w: policy.monthlyVolume[j.taskType], d: [...p.keys()].filter((k) => b.has(k)).map((k) => p.get(k)! - b.get(k)!) };
+      return { w: policy.monthlyVolume[j.taskType]!, d: [...p.keys()].filter((k) => b.has(k)).map((k) => p.get(k)! - b.get(k)!) };
     }).filter((x) => x.d.length);
 
   const weightedDelta = (groups: { w: number; d: number[] }[]): Interval | null => {
@@ -308,7 +310,7 @@ export function decide(results: ResultRow[], tasks: Task[], targets: Target[], p
   const qualityDelta = weightedDelta(pairs(rowQuality));
   const checksDelta = weightedDelta(pairs(rowChecks));
 
-  const costParts = holdout.map((h) => ({ v: policy.monthlyVolume[h.taskType], p: h.pick.costPerRequest, b: h.baseline.costPerRequest }));
+  const costParts = holdout.map((h) => ({ v: policy.monthlyVolume[h.taskType]!, p: h.pick.costPerRequest, b: h.baseline.costPerRequest }));
   const priced = costParts.every((c) => c.p != null && c.b != null);
   const routedMonthly = priced ? sum(costParts.map((c) => c.v * c.p!)) : null;
   const baselineMonthly = priced ? sum(costParts.map((c) => c.v * c.b!)) : null;
@@ -333,9 +335,9 @@ export function decide(results: ResultRow[], tasks: Task[], targets: Target[], p
       `${okChecks ? '✓' : '✗'} Deterministic checks only (no model grading): ${pts(checksDelta.estimate)} points (${pts(checksDelta.low)} to ${pts(checksDelta.high)}).`,
       `${cheaper ? '✓' : '✗'} Cost: $${routedMonthly.toFixed(2)}/mo routed vs $${baselineMonthly.toFixed(2)}/mo on the baseline.`
     );
-    for (const h of holdout.filter((h) => !h.held)) reasons.push(`! ${TASK_TYPES[h.taskType].label}: the pick did not hold on holdout (${h.why.join(', ')}).`);
+    for (const h of holdout.filter((h) => !h.held)) reasons.push(`! ${jobInfo(h.taskType).label}: the pick did not hold on holdout (${h.why.join(', ')}).`);
     const tentative = routed.filter((j) => j.pick!.confidence === 'tentative');
-    if (tentative.length) reasons.push(`! Tentative on dev: ${tentative.map((j) => TASK_TYPES[j.taskType].label).join(', ')}. More dev tasks would firm these up.`);
+    if (tentative.length) reasons.push(`! Tentative on dev: ${tentative.map((j) => jobInfo(j.taskType).label).join(', ')}. More dev tasks would firm these up.`);
   }
 
   return { ...base, holdout, qualityDelta, checksDelta, routedMonthly, baselineMonthly, savingsPct, verdict, reasons };

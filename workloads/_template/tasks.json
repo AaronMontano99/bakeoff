@@ -1,0 +1,9 @@
+{
+  "name": "My project",
+  "description": "Fictional tasks for my project. Never use real customer data here.",
+  "today": "2026-01-15",
+  "tasks": [
+    { "id": "my-answer-01", "type": "my-answer", "title": "A first question", "split": "dev", "input": { "question": "What are your opening hours?" }, "gold": { "mustMention": "9" } },
+    { "id": "my-answer-02", "type": "my-answer", "title": "A held-back question", "split": "holdout", "input": { "question": "Do you offer refunds?" }, "gold": { "mustMention": "refund" } }
+  ]
+}

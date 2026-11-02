@@ -10,6 +10,12 @@ I didn't want to read about those questions. I wanted to measure them. So I buil
 
 ![Overview](docs/screenshots/overview.png)
 
+## Test your own AI project
+
+Bakeoff isn't tied to one app. Every project is a folder in [`workloads/`](./workloads): copy the template, describe your app's AI jobs, write how it builds its prompts, and add some made-up tasks. It shows up in the app on its own. [The guide](./workloads/README.md) takes about five steps.
+
+Ferret is the built-in example, which is why the results below are about sales calls.
+
 ## What it is
 
 Bakeoff takes the AI work from [Ferret](https://github.com/AaronMontano99/ferret), a prospecting tool I built for my own job and use every day, and runs it against different models: one on my laptop, Claude through my existing plan, and hosted providers when they have an API key. For every request it records how long the first token took, how long the whole answer took, what it cost and how good it was. Then it answers the question a buyer would actually ask: **which model should handle which job, and what will that cost a team per month?**
@@ -122,11 +128,13 @@ Every run produces a one-page brief you can print or send:
 I built Bakeoff with Claude Code. My part was the questions, the workload, the measurement design, the decisions about what counts as fair, and reading every result to make sure I could explain it. Building it with an AI coding tool is itself part of what I'm learning: how to turn a question into a working system and then check that the system tells the truth.
 
 ```
-workloads/scout-sdr/tasks.json   48 tasks on fictional accounts (24 dev, 24 holdout), with right answers where a job has one
+workloads/                       each project Bakeoff can test, found automatically
+workloads/scout-sdr/             the built-in Ferret example: 48 tasks on fictional accounts (24 dev, 24 holdout)
+workloads/_template/             copy this to test your own project
 config/targets.json              every model: provider, deployment type, prices
 
 src/core/
-  workload/      the four jobs, the shared playbook, how prompts are built, the expected output shapes
+  workload/      finds the projects in workloads/ and runs them, without knowing any by name
   providers/     one adapter for every OpenAI-compatible API (Ollama, Fireworks, Together, Baseten, Groq),
                  one for the Claude API (streaming, prompt caching, effort), one for the Claude Code CLI
   runner.ts      warm-up → quality pass (one lane per model) → load test (one level at a time); judging runs alongside

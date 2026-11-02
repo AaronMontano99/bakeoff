@@ -15,6 +15,32 @@
       "notes": "Quantized 3B model on a 2017 Intel MacBook CPU. The floor: what you get for free."
     },
     {
+      "id": "ollama-llama3.2-1b",
+      "label": "Llama 3.2 1B · local",
+      "vendor": "Ollama",
+      "provider": "openai-compatible",
+      "model": "llama3.2:1b",
+      "deployment": "local",
+      "baseUrl": "http://localhost:11434/v1",
+      "jsonMode": true,
+      "pricing": { "inputPerMTok": 0, "outputPerMTok": 0, "source": "Runs on this laptop; marginal cost $0" },
+      "enabled": true,
+      "notes": "Same family, a third the size: how much speed does 1B buy on a laptop CPU, and what does it cost in quality?"
+    },
+    {
+      "id": "ollama-qwen2.5-1.5b",
+      "label": "Qwen 2.5 1.5B · local",
+      "vendor": "Ollama",
+      "provider": "openai-compatible",
+      "model": "qwen2.5:1.5b",
+      "deployment": "local",
+      "baseUrl": "http://localhost:11434/v1",
+      "jsonMode": true,
+      "pricing": { "inputPerMTok": 0, "outputPerMTok": 0, "source": "Runs on this laptop; marginal cost $0" },
+      "enabled": true,
+      "notes": "A different small open model, known for following JSON formats well for its size."
+    },
+    {
       "id": "claude-cli-haiku",
       "label": "Claude Haiku · Claude Code",
       "vendor": "Anthropic (subscription)",

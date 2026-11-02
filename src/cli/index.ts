@@ -1,13 +1,15 @@
 import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import { businessCase, defaultCaseInputs, loadCurve, summarize } from '@/core/analysis';
-import { getRun, listResults, listRuns } from '@/core/db';
+import { getRun, listResults, listRuns, setJudgement } from '@/core/db';
 import { decide, defaultPolicy, type Decision } from '@/core/decide';
-import { checkTarget } from '@/core/providers';
+import { judge } from '@/core/evals/judge';
+import { callTarget, checkTarget } from '@/core/providers';
 import { planRun, runAndWait } from '@/core/runner';
 import { loadTargets } from '@/core/targets';
-import type { RunConfig, TaskType } from '@/core/types';
-import { loadWorkload, TASK_TYPE_ORDER, TASK_TYPES } from '@/core/workload';
+import type { RunConfig, TaskType, WorkloadId } from '@/core/types';
+import { buildPrompt, DEFAULT_WORKLOAD, jobsOf, loadWorkload, workloadCommands, jobInfo, TASK_TYPES, WORKLOAD_ORDER, workloadMeta } from '@/core/workload';
+import { sloName } from '@/core/workload/meta';
 
 for (const f of ['.env.local', '.env']) if (fs.existsSync(f)) process.loadEnvFile(f);
 
@@ -28,18 +30,26 @@ function table(rows: string[][]) {
   }
 }
 
-const HELP = `${bold('bakeoff')}: inference bake-off on the Ferret SDR workload
+const commandHelp = Object.entries(workloadCommands())
+  .map(([name, c]) => `  npm run bakeoff -- ${name.padEnd(24)} ${c.help}\n`)
+  .join('');
+
+const HELP = `${bold('bakeoff')}: inference bake-off on any app's AI jobs
 
   npm run bakeoff -- targets                 Which targets are ready to run
   npm run bakeoff -- run [options]           Run a benchmark (live progress in the terminal and the dashboard)
   npm run bakeoff -- report [run-id]         Summary + business case for a run (default: latest)
   npm run bakeoff -- runs                    List past runs
-  npm run bakeoff -- decide [run-id]         Pick a model per job on dev tasks, then test the picks on holdout
+  npm run bakeoff -- judge [run-id]          Judge a run's unjudged answers afterwards (--judge id), so judging
+                                             never competes with local models for the CPU while they're timed
+${commandHelp}  npm run bakeoff -- decide [run-id]         Pick a model per job on dev tasks, then test the picks on holdout
                                              (--bar 0.8 --margin 0.05; writes data/reports/decision-<run>.md)
 
 run options:
+  --workload id        ${WORKLOAD_ORDER.join(', ')} (default ${DEFAULT_WORKLOAD})
   --targets a,b        Target ids (default: every ready target)
-  --types t1,t2        signal,debrief,email,callcard (default: all)
+  --types t1,t2        Jobs to run (default: all of the workload's)
+                       ${WORKLOAD_ORDER.map((w) => `${w}: ${jobsOf(w).join(',')}`).join(' · ')}
   --per-type N         Tasks per type (default 3)
   --repeats N          Repeats per task (default 1)
   --concurrency 1,4    Load-test levels (default: none)
@@ -65,6 +75,7 @@ async function cmdRun(argv: string[]) {
   const { values } = parseArgs({
     args: argv,
     options: {
+      workload: { type: 'string', default: DEFAULT_WORKLOAD },
       targets: { type: 'string' },
       types: { type: 'string' },
       'per-type': { type: 'string', default: '3' },
@@ -77,6 +88,11 @@ async function cmdRun(argv: string[]) {
       name: { type: 'string' },
     },
   });
+  const workload = values.workload as WorkloadId;
+  if (!WORKLOAD_ORDER.includes(workload)) throw new Error(`Unknown workload "${values.workload}". Use one of: ${WORKLOAD_ORDER.join(', ')}`);
+  const types = (values.types?.split(',').map((t) => t.trim()) as TaskType[] | undefined) ?? jobsOf(workload);
+  const wrong = types.filter((t) => !jobsOf(workload).includes(t));
+  if (wrong.length) throw new Error(`${wrong.join(', ')} ${wrong.length > 1 ? 'are not jobs' : 'is not a job'} in ${workload}. Its jobs: ${jobsOf(workload).join(', ')}`);
   const targets = loadTargets();
   let targetIds = values.targets?.split(',').map((s) => s.trim()).filter(Boolean);
   if (!targetIds) {
@@ -85,9 +101,10 @@ async function cmdRun(argv: string[]) {
   }
   if (!targetIds.length) throw new Error('No ready targets. Run `npm run bakeoff -- targets` to see why.');
   const config: RunConfig = {
-    name: values.name ?? `CLI run · ${targetIds.length} targets`,
+    name: values.name ?? `CLI run · ${workloadMeta(workload).short} · ${targetIds.length} targets`,
+    workload,
     targetIds,
-    taskTypes: (values.types?.split(',') as TaskType[] | undefined) ?? TASK_TYPE_ORDER,
+    taskTypes: types,
     tasksPerType: Number(values['per-type']),
     repeats: Number(values.repeats),
     concurrency: values.concurrency ? values.concurrency.split(',').map(Number).filter((n) => n > 0) : [],
@@ -118,11 +135,12 @@ function report(runId?: string) {
   const sums = summarize(results, run.config.targetIds);
   console.log(bold(`\n${run.name}`) + dim(`  ${run.id} · ${run.status}`));
   table([
-    ['target', 'ok', 'ttft p50', 'total p95', 'tok/s', 'checks', 'judge', 'quality', '$/req', 'cache'],
+    ['target', 'ok', 'ttft p50', 'ttft p95', 'total p95', 'tok/s', 'checks', 'judge', 'quality', '$/req', 'cache'],
     ...sums.map((s) => [
       targets.find((t) => t.id === s.targetId)?.label ?? s.targetId,
       pct(s.okRate) + '%',
       sec(s.ttftP50),
+      sec(s.ttftP95),
       sec(s.totalP95),
       s.tokensPerSec == null ? '—' : s.tokensPerSec.toFixed(0),
       pct(s.checkScore),
@@ -140,12 +158,44 @@ function report(runId?: string) {
       ...load.map((l) => [l.targetId, String(l.concurrency), sec(l.totalP50), sec(l.totalP95), l.requestsPerSec?.toFixed(2) ?? '—', l.outputTokensPerSec?.toFixed(0) ?? '—', pct(l.errorRate) + '%']),
     ]);
   }
-  const bc = businessCase(sums, targets, defaultCaseInputs());
-  console.log(bold('\nBusiness case') + dim(' (10 reps, 21 workdays, default budgets)'));
+  const wm = workloadMeta(run.config.workload);
+  const inputs = defaultCaseInputs(run.config.workload);
+  const bc = businessCase(sums, targets, inputs);
+  console.log(bold('\nBusiness case') + dim(` (${inputs.reps.toLocaleString('en-US')} ${wm.unit}s, ${inputs.workdays} days a month, default budgets)`));
   console.log(bc.headline);
   for (const l of bc.lines) console.log(`  • ${l}`);
   for (const g of bc.gaps) console.log(dim(`  ! ${g.message}`));
   console.log();
+}
+
+async function cmdJudge(argv: string[]) {
+  const { values, positionals } = parseArgs({ args: argv, allowPositionals: true, options: { judge: { type: 'string', default: 'claude-cli-haiku' } } });
+  const run = positionals[0] ? getRun(positionals[0]) : listRuns()[0];
+  if (!run) throw new Error('No run found.');
+  const judgeTarget = loadTargets().find((t) => t.id === values.judge);
+  if (!judgeTarget) throw new Error(`No target ${values.judge}`);
+  const workload = loadWorkload(run.config.workload);
+  const todo = listResults(run.id).filter((r) => r.phase === 'quality' && r.ok && r.judgeScore == null);
+  console.log(`${bold(run.name)}  ${dim(`${todo.length} answers to judge with ${judgeTarget.label}`)}`);
+  let next = 0;
+  const worker = async () => {
+    while (next < todo.length) {
+      const r = todo[next++]!;
+      const task = workload.tasks.find((t) => t.id === r.taskId);
+      if (!task) continue;
+      try {
+        const j = await judge(task, r.output ?? '', workload, judgeTarget);
+        setJudgement(r.id, j.score, j.rationale);
+        console.log(`${green('✓')} ${r.targetId.padEnd(28)} ${r.taskId.padEnd(22)} ${j.score}/5 ${dim(j.rationale.slice(0, 90))}`);
+      } catch (e) {
+        setJudgement(r.id, null, `Judge failed: ${(e as Error).message}`);
+        console.log(`${red('✗')} ${r.targetId.padEnd(28)} ${r.taskId.padEnd(22)} ${red((e as Error).message.slice(0, 90))}`);
+      }
+    }
+  };
+  // Two at a time, the same as judging during a run.
+  await Promise.all([worker(), worker()]);
+  report(run.id);
 }
 
 function cmdDecide(argv: string[]) {
@@ -160,7 +210,7 @@ function cmdDecide(argv: string[]) {
   if (values.bar) policy.qualityBar = Number(values.bar);
   if (values.margin) policy.margin = Number(values.margin);
   const targets = loadTargets();
-  const d = decide(listResults(run.id), loadWorkload().tasks, targets, policy);
+  const d = decide(listResults(run.id), loadWorkload(run.config.workload).tasks, targets, policy);
   const md = decisionMarkdown(run.id, run.name, d, (id) => targets.find((t) => t.id === id)?.label ?? id);
   fs.mkdirSync('data/reports', { recursive: true });
   const file = `data/reports/decision-${run.id}.md`;
@@ -183,7 +233,7 @@ export function decisionMarkdown(runId: string, runName: string, d: Decision, la
     '',
     `Run \`${runId}\` · decision fingerprint \`${d.fingerprint}\` · ${d.devTasks} dev tasks, ${d.holdoutTasks} holdout tasks`,
     '',
-    `Constraints: quality bar ${p(d.policy.qualityBar)}, p95 budgets ${TASK_TYPE_ORDER.map((t) => `${TASK_TYPES[t].short} ${s(d.policy.sloMs[t])}`).join(', ')}, at least ${p(d.policy.minOkRate)}% of requests succeed, non-inferiority margin ${p(d.policy.margin)} points, ${p(d.policy.confidence)}% bootstrap intervals over tasks.`,
+    `Constraints: quality bar ${p(d.policy.qualityBar)}, latency budgets ${d.jobs.map((j) => `${jobInfo(j.taskType).short} ${sloName(j.taskType)} ${s(d.policy.sloMs[j.taskType]!)}`).join(', ')}, at least ${p(d.policy.minOkRate)}% of requests succeed, non-inferiority margin ${p(d.policy.margin)} points, ${p(d.policy.confidence)}% bootstrap intervals over tasks.`,
     '',
     `**${verdictLine}**`,
     '',
@@ -200,16 +250,16 @@ export function decisionMarkdown(runId: string, runName: string, d: Decision, la
     for (const c of j.candidates) {
       const picked = j.pick?.targetId === c.targetId;
       out.push(
-        `| ${TASK_TYPES[j.taskType].label} | ${picked ? '**' + label(c.targetId) + '** (pick)' : label(c.targetId)} | ${p(c.quality)} (${p(c.qualityLow)} to ${p(c.qualityHigh)}) | ${p(c.checksOnly)} | ${s(c.p95)} | ${c.costPerRequest == null ? 'n/a' : '$' + c.costPerRequest.toFixed(5)} | ${c.confidence}${c.why.length ? ': ' + c.why.join('; ') : ''} |`
+        `| ${jobInfo(j.taskType).label} | ${picked ? '**' + label(c.targetId) + '** (pick)' : label(c.targetId)} | ${p(c.quality)} (${p(c.qualityLow)} to ${p(c.qualityHigh)}) | ${p(c.checksOnly)} | ${s(c.p95)} | ${c.costPerRequest == null ? 'n/a' : '$' + c.costPerRequest.toFixed(5)} | ${c.confidence}${c.why.length ? ': ' + c.why.join('; ') : ''} |`
       );
     }
-    if (!j.pick) out.push(`| ${TASK_TYPES[j.taskType].label} | *no pick* | | | | | nothing cleared every constraint |`);
+    if (!j.pick) out.push(`| ${jobInfo(j.taskType).label} | *no pick* | | | | | nothing cleared every constraint |`);
   }
   if (d.holdout.length) {
     out.push('', '## Step 2: the frozen picks on holdout tasks', '', '| Job | Pick: quality / checks / p95 | Baseline: quality / checks / p95 | Held? |', '|---|---|---|---|');
     for (const h of d.holdout) {
       out.push(
-        `| ${TASK_TYPES[h.taskType].label} | ${label(h.pick.targetId)}: ${p(h.pick.quality)} / ${p(h.pick.checksOnly)} / ${s(h.pick.p95)} | ${label(h.baseline.targetId)}: ${p(h.baseline.quality)} / ${p(h.baseline.checksOnly)} / ${s(h.baseline.p95)} | ${h.held ? 'yes' : 'no: ' + h.why.join(', ')} |`
+        `| ${jobInfo(h.taskType).label} | ${label(h.pick.targetId)}: ${p(h.pick.quality)} / ${p(h.pick.checksOnly)} / ${s(h.pick.p95)} | ${label(h.baseline.targetId)}: ${p(h.baseline.quality)} / ${p(h.baseline.checksOnly)} / ${s(h.baseline.p95)} | ${h.held ? 'yes' : 'no: ' + h.why.join(', ')} |`
       );
     }
     if (d.routedMonthly != null && d.baselineMonthly != null) {
@@ -238,6 +288,8 @@ async function main() {
       return cmdRun(rest);
     case 'report':
       return report(rest[0]);
+    case 'judge':
+      return cmdJudge(rest);
     case 'decide':
       return cmdDecide(rest);
     case 'runs':

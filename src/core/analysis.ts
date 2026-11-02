@@ -1,6 +1,7 @@
 import { mean, percentile, spearman, sum } from './stats';
 import type { ResultRow, Target, TaskType } from './types';
-import { TASK_TYPE_ORDER, TASK_TYPES } from './workload/meta';
+import { jobInfo, sloName, sloP95, TASK_TYPE_ORDER, TASK_TYPES, workloadMeta } from './workload/meta';
+import type { WorkloadId } from './types';
 
 /**
  * Turns raw result rows into the numbers the dashboard and the business
@@ -151,14 +152,16 @@ export interface CaseInputs {
   qualityBar: number;
 }
 
-export function defaultCaseInputs(): CaseInputs {
+/** `reps` and `workdays` are whatever generates the traffic, as the project defines it. */
+export function defaultCaseInputs(workload?: WorkloadId): CaseInputs {
   const perRepPerDay = {} as Record<TaskType, number>;
   const sloMs = {} as Record<TaskType, number>;
   for (const t of TASK_TYPE_ORDER) {
-    perRepPerDay[t] = TASK_TYPES[t].defaultPerRepPerDay;
-    sloMs[t] = TASK_TYPES[t].defaultSloMs;
+    perRepPerDay[t] = jobInfo(t).defaultPerRepPerDay;
+    sloMs[t] = jobInfo(t).defaultSloMs;
   }
-  return { reps: 10, workdays: 21, perRepPerDay, sloMs, qualityBar: 0.8 };
+  const w = workloadMeta(workload);
+  return { reps: w.defaultUnits, workdays: w.defaultDays, perRepPerDay, sloMs, qualityBar: 0.8 };
 }
 
 export interface RouteOption {
@@ -217,18 +220,19 @@ export function businessCase(summaries: TargetSummary[], targets: Target[], inpu
   for (const t of TASK_TYPE_ORDER) {
     const present = summaries.filter((s) => s.byType[t]);
     if (!present.length) continue;
-    const monthlyVolume = Math.round(inputs.reps * inputs.workdays * inputs.perRepPerDay[t]);
+    const monthlyVolume = Math.round(inputs.reps * inputs.workdays * inputs.perRepPerDay[t]!);
     const options: RouteOption[] = present.map((s) => {
       const st = s.byType[t]!;
       const why: string[] = [];
       if (st.quality == null || st.quality < inputs.qualityBar) why.push(`quality ${st.quality == null ? 'n/a' : Math.round(st.quality * 100)} under the ${Math.round(inputs.qualityBar * 100)} bar`);
-      if (st.totalP95 == null || st.totalP95 > inputs.sloMs[t]) why.push(`p95 ${st.totalP95 == null ? 'n/a' : (st.totalP95 / 1000).toFixed(1) + 's'} over the ${(inputs.sloMs[t] / 1000).toFixed(0)}s budget`);
+      const p95 = sloP95(st, t);
+      if (p95 == null || p95 > inputs.sloMs[t]!) why.push(`${sloName(t)} ${p95 == null ? 'n/a' : (p95 / 1000).toFixed(1) + 's'} over the ${(inputs.sloMs[t]! / 1000).toFixed(0)}s budget`);
       if (st.okRate < 0.95) why.push(`${Math.round((1 - st.okRate) * 100)}% of requests failed`);
       if (st.costPerRequest == null) why.push('no price entered');
       return {
         targetId: s.targetId,
         quality: st.quality,
-        p95: st.totalP95,
+        p95,
         costPerRequest: st.costPerRequest,
         monthlyCost: st.costPerRequest == null ? null : st.costPerRequest * monthlyVolume,
         eligible: why.length === 0,
@@ -254,7 +258,7 @@ export function businessCase(summaries: TargetSummary[], targets: Target[], inpu
   const lines: string[] = [];
   for (const r of routes) {
     if (!r.pick) continue;
-    const name = TASK_TYPES[r.taskType].label;
+    const name = jobInfo(r.taskType).label;
     const q = r.pick.quality != null ? Math.round(r.pick.quality * 100) : null;
     const bq = r.baseline?.quality != null ? Math.round(r.baseline.quality * 100) : null;
     const delta = q != null && bq != null && r.baseline?.targetId !== r.pick.targetId ? ` (${q - bq >= 0 ? '+' : ''}${q - bq} quality vs ${label(r.baseline!.targetId)})` : '';
@@ -273,30 +277,30 @@ export function businessCase(summaries: TargetSummary[], targets: Target[], inpu
   } else if (routes.length && gaps.length) {
     headline = 'No job has a model that clears the bar, the latency budget and has a price yet. See what would change that below.';
   }
-  if (partial && routedMonthly != null) headline += ` ${gaps.map((g) => TASK_TYPES[g.taskType].label).join(' and ')} still needs a model.`;
+  if (partial && routedMonthly != null) headline += ` ${gaps.map((g) => jobInfo(g.taskType).label).join(' and ')} still needs a model.`;
 
   return { inputs, routes, routedMonthly, routedCount, baselineMonthly, baselineTargetId, savingsPct, headline, lines, gaps };
 }
 
 /** Explain why nothing qualified, and find the smallest assumption change that would fix it. */
 function gapFor(t: TaskType, options: RouteOption[], inputs: CaseInputs, label: (id: string) => string): Gap {
-  const name = TASK_TYPES[t].label;
+  const name = jobInfo(t).label;
   const priced = options.filter((o) => o.costPerRequest != null && (o.quality ?? 0) > 0);
   // Only latency in the way: suggest the budget that would let the best-quality one in.
   const latencyOnly = priced
-    .filter((o) => (o.quality ?? 0) >= inputs.qualityBar && o.p95 != null && o.p95 > inputs.sloMs[t])
+    .filter((o) => (o.quality ?? 0) >= inputs.qualityBar && o.p95 != null && o.p95 > inputs.sloMs[t]!)
     .sort((a, b) => a.p95! - b.p95!);
   if (latencyOnly[0]) {
     const o = latencyOnly[0];
     const secs = Math.ceil(o.p95! / 1000);
     return {
       taskType: t,
-      message: `${name}: every model that’s good enough is too slow for a ${(inputs.sloMs[t] / 1000).toFixed(0)}s p95. Closest: ${label(o.targetId)} at ${(o.p95! / 1000).toFixed(1)}s. Raise the budget, or add a faster target.`,
+      message: `${name}: every model that’s good enough is too slow for a ${(inputs.sloMs[t]! / 1000).toFixed(0)}s p95. Closest: ${label(o.targetId)} at ${(o.p95! / 1000).toFixed(1)}s. Raise the budget, or add a faster target.`,
       fix: { label: `Use a ${secs}s budget`, sloMs: secs * 1000 },
     };
   }
   const qualityOnly = priced
-    .filter((o) => o.p95 != null && o.p95 <= inputs.sloMs[t] && (o.quality ?? 0) < inputs.qualityBar)
+    .filter((o) => o.p95 != null && o.p95 <= inputs.sloMs[t]! && (o.quality ?? 0) < inputs.qualityBar)
     .sort((a, b) => (b.quality ?? 0) - (a.quality ?? 0));
   if (qualityOnly[0]) {
     const o = qualityOnly[0];

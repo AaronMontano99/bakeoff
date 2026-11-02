@@ -4,15 +4,17 @@ import { ArrowRight, Check, FileText, RotateCcw, Server, TriangleAlert, X } from
 import { useState, type Dispatch, type SetStateAction } from 'react';
 import { toast } from 'sonner';
 import { crossover, defaultCaseInputs, type CaseInputs } from '@/core/analysis';
-import { TASK_TYPES } from '@/core/workload/meta';
+import type { WorkloadId } from '@/core/types';
+import { jobInfo, TASK_TYPES, workloadMeta } from '@/core/workload/meta';
 import { LineChart } from '@/components/charts';
 import { Button, ButtonLink, Card, CardHeader, cx, Stat, Swatch } from '@/components/ui';
 import { fmt } from '@/lib/format';
 import type { RunModel } from '@/lib/run-model';
 import type { TargetWithStatus } from '@/lib/types-client';
 
-export function CaseTab({ runId, model, inputs, setInputs, targets }: { runId: string; model: RunModel; inputs: CaseInputs; setInputs: Dispatch<SetStateAction<CaseInputs>>; targets: TargetWithStatus[] }) {
+export function CaseTab({ runId, model, inputs, setInputs, targets, workloadId }: { runId: string; model: RunModel; inputs: CaseInputs; setInputs: Dispatch<SetStateAction<CaseInputs>>; targets: TargetWithStatus[]; workloadId?: WorkloadId }) {
   const { bc, meta } = model;
+  const unit = workloadMeta(workloadId).unit;
   const totalVolume = bc.routes.reduce((a, r) => a + r.monthlyVolume, 0);
 
   return (
@@ -21,15 +23,15 @@ export function CaseTab({ runId, model, inputs, setInputs, targets }: { runId: s
       <Card className="h-fit p-5 lg:sticky lg:top-24">
         <div className="flex items-center justify-between">
           <h3 className="text-[15px] font-semibold">Assumptions</h3>
-          <button onClick={() => setInputs(defaultCaseInputs())} className="flex items-center gap-1 text-[12.5px] text-ink-3 hover:text-ink">
+          <button onClick={() => setInputs(defaultCaseInputs(workloadId))} className="flex items-center gap-1 text-[12.5px] text-ink-3 hover:text-ink">
             <RotateCcw className="size-3" /> Reset
           </button>
         </div>
         <p className="mt-1 text-[12.5px] leading-snug text-ink-3">Everything recalculates as you type. Saved in this browser.</p>
 
         <div className="mt-4 grid grid-cols-2 gap-3">
-          <Num label="Reps" value={inputs.reps} onChange={(v) => setInputs((i) => ({ ...i, reps: v }))} min={1} />
-          <Num label="Workdays / mo" value={inputs.workdays} onChange={(v) => setInputs((i) => ({ ...i, workdays: v }))} min={1} max={31} />
+          <Num label={`${unit[0]!.toUpperCase()}${unit.slice(1)}s`} value={inputs.reps} onChange={(v) => setInputs((i) => ({ ...i, reps: v }))} min={1} />
+          <Num label={unit === 'rep' ? 'Workdays / mo' : 'Active days / mo'} value={inputs.workdays} onChange={(v) => setInputs((i) => ({ ...i, workdays: v }))} min={1} max={31} />
         </div>
 
         <div className="mt-4">
@@ -52,12 +54,12 @@ export function CaseTab({ runId, model, inputs, setInputs, targets }: { runId: s
         <div className="mt-5 border-t border-line pt-4">
           <div className="grid grid-cols-[1fr_64px_64px] gap-x-2 gap-y-2 text-[12px]">
             <span className="font-medium text-ink-3">Job</span>
-            <span className="text-right font-medium text-ink-3" title="Requests per rep per workday">Per rep/day</span>
-            <span className="text-right font-medium text-ink-3" title="p95 latency budget in seconds">p95 budget</span>
+            <span className="text-right font-medium text-ink-3" title={`Requests per ${unit} per day`}>Per {unit}/day</span>
+            <span className="text-right font-medium text-ink-3" title="p95 latency budget in seconds. Jobs marked first word are held to time to first word.">p95 budget</span>
             {bc.routes.map((r) => (
-              <Row key={r.taskType} label={TASK_TYPES[r.taskType].label}>
-                <SmallNum value={inputs.perRepPerDay[r.taskType]} onChange={(v) => setInputs((i) => ({ ...i, perRepPerDay: { ...i.perRepPerDay, [r.taskType]: v } }))} />
-                <SmallNum value={inputs.sloMs[r.taskType] / 1000} suffix="s" onChange={(v) => setInputs((i) => ({ ...i, sloMs: { ...i.sloMs, [r.taskType]: Math.max(1, v) * 1000 } }))} />
+              <Row key={r.taskType} label={jobInfo(r.taskType).label}>
+                <SmallNum value={inputs.perRepPerDay[r.taskType]!} onChange={(v) => setInputs((i) => ({ ...i, perRepPerDay: { ...i.perRepPerDay, [r.taskType]: v } }))} />
+                <SmallNum value={inputs.sloMs[r.taskType]! / 1000} suffix="s" onChange={(v) => setInputs((i) => ({ ...i, sloMs: { ...i.sloMs, [r.taskType]: Math.max(1, v) * 1000 } }))} />
               </Row>
             ))}
           </div>
@@ -105,8 +107,8 @@ export function CaseTab({ runId, model, inputs, setInputs, targets }: { runId: s
         {bc.routes.map((r) => (
           <Card key={r.taskType}>
             <CardHeader
-              title={TASK_TYPES[r.taskType].label}
-              subtitle={`${fmt.int(r.monthlyVolume)} requests/mo · p95 budget ${fmt.sec(inputs.sloMs[r.taskType], 0)} · ${TASK_TYPES[r.taskType].profile}`}
+              title={jobInfo(r.taskType).label}
+              subtitle={`${fmt.int(r.monthlyVolume)} requests/mo · p95 budget ${fmt.sec(inputs.sloMs[r.taskType]!, 0)} · ${jobInfo(r.taskType).profile}`}
               action={r.pick && <span className="flex items-center gap-1.5 rounded-full bg-tint px-2.5 py-1 text-[12.5px] font-medium text-accent-ink ring-1 ring-tint-line"><Check className="size-3.5" /> {meta(r.pick.targetId).label}</span>}
             />
             <div className="overflow-x-auto scrollbar-thin">
@@ -133,7 +135,7 @@ export function CaseTab({ runId, model, inputs, setInputs, targets }: { runId: s
                           </span>
                         </td>
                         <td className={cx('tabular px-3 text-right', o.quality != null && o.quality < inputs.qualityBar && 'text-bad')}>{fmt.score(o.quality)}</td>
-                        <td className={cx('tabular px-3 text-right', o.p95 != null && o.p95 > inputs.sloMs[r.taskType] && 'text-bad')}>{fmt.sec(o.p95)}</td>
+                        <td className={cx('tabular px-3 text-right', o.p95 != null && o.p95 > inputs.sloMs[r.taskType]! && 'text-bad')}>{fmt.sec(o.p95)}</td>
                         <td className="tabular px-3 text-right">{fmt.usd(o.costPerRequest)}</td>
                         <td className="tabular px-3 text-right font-medium">{fmt.usd(o.monthlyCost)}</td>
                         <td className="pr-5 pl-3">
@@ -258,7 +260,7 @@ function Num({ label, value, onChange, min = 0, max = 100_000 }: { label: string
         min={min}
         max={max}
         onChange={(e) => onChange(Math.min(max, Math.max(min, Number(e.target.value) || min)))}
-        className="tabular mt-1 h-9 w-full rounded-control border border-line px-3 text-sm outline-none focus:border-accent focus:shadow-[var(--ring)]"
+        className="tabular mt-1 h-9 w-full rounded-[10px] border border-line-strong px-3 text-sm outline-none focus:border-accent focus:shadow-[var(--ring)]"
       />
     </label>
   );

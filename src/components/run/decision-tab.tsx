@@ -4,8 +4,9 @@ import { FlaskConical, Lock, Scale } from 'lucide-react';
 import { useMemo } from 'react';
 import type { CaseInputs } from '@/core/analysis';
 import { decide, defaultPolicy, type Candidate, type Verdict } from '@/core/decide';
-import type { ResultRow, Target } from '@/core/types';
-import { TASK_TYPE_ORDER, TASK_TYPES } from '@/core/workload/meta';
+import type { ResultRow, Target, WorkloadId } from '@/core/types';
+import { TASK_TYPE_ORDER, jobInfo, TASK_TYPES } from '@/core/workload/meta';
+import { FirstWord } from './first-word';
 import { Badge, Card, CardHeader, EmptyState, Stat, Swatch } from '@/components/ui';
 import type { RunModel } from '@/lib/run-model';
 import type { TargetWithStatus } from '@/lib/types-client';
@@ -22,14 +23,14 @@ const pts = (v: number | null) => (v == null ? '—' : String(Math.round(v * 100
 const signed = (v: number) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}`;
 const sec = (v: number | null) => (v == null ? '—' : `${(v / 1000).toFixed(1)}s`);
 
-export function DecisionTab({ results, model, inputs, targets }: { results: ResultRow[]; model: RunModel; inputs: CaseInputs; targets: TargetWithStatus[] }) {
-  const { workload } = useWorkload();
+export function DecisionTab({ results, model, inputs, targets, workloadId }: { results: ResultRow[]; model: RunModel; inputs: CaseInputs; targets: TargetWithStatus[]; workloadId?: WorkloadId }) {
+  const { workload } = useWorkload(workloadId);
   const d = useMemo(() => {
     if (!workload) return null;
     const policy = defaultPolicy();
     policy.qualityBar = inputs.qualityBar;
     policy.sloMs = inputs.sloMs;
-    for (const t of TASK_TYPE_ORDER) policy.monthlyVolume[t] = inputs.reps * inputs.workdays * inputs.perRepPerDay[t];
+    for (const t of TASK_TYPE_ORDER) policy.monthlyVolume[t] = inputs.reps * inputs.workdays * inputs.perRepPerDay[t]!;
     return decide(results, workload.tasks, targets as Target[], policy);
   }, [results, workload, targets, inputs]);
 
@@ -87,7 +88,7 @@ export function DecisionTab({ results, model, inputs, targets }: { results: Resu
               {d.jobs.map((j) =>
                 j.candidates.map((c, i) => (
                   <tr key={j.taskType + c.targetId} className={i === 0 ? 'border-t border-line' : ''}>
-                    <td className="py-2 pr-3 font-medium">{i === 0 ? TASK_TYPES[j.taskType].label : ''}</td>
+                    <td className="py-2 pr-3 font-medium">{i === 0 ? jobInfo(j.taskType).label : ''}</td>
                     <td className="py-2 pr-3">
                       <span className="flex items-center gap-2">
                         <Swatch color={meta(c.targetId).color} />
@@ -99,7 +100,7 @@ export function DecisionTab({ results, model, inputs, targets }: { results: Resu
                       {pts(c.quality)} <span className="text-ink-3">({pts(c.qualityLow)}–{pts(c.qualityHigh)})</span>
                     </td>
                     <td className="py-2 pr-3">{pts(c.checksOnly)}</td>
-                    <td className="py-2 pr-3">{sec(c.p95)}</td>
+                    <td className="py-2 pr-3">{sec(c.p95)}<FirstWord t={j.taskType} /></td>
                     <td className="py-2 pr-3">
                       <Status c={c} />
                     </td>
@@ -127,12 +128,12 @@ export function DecisionTab({ results, model, inputs, targets }: { results: Resu
               <tbody>
                 {d.holdout.map((h) => (
                   <tr key={h.taskType} className="border-t border-line">
-                    <td className="py-2 pr-3 font-medium">{TASK_TYPES[h.taskType].label}</td>
+                    <td className="py-2 pr-3 font-medium">{jobInfo(h.taskType).label}</td>
                     <td className="py-2 pr-3">
-                      {meta(h.pick.targetId).label}: {pts(h.pick.quality)} / {pts(h.pick.checksOnly)} / {sec(h.pick.p95)}
+                      {meta(h.pick.targetId).label}: {pts(h.pick.quality)} / {pts(h.pick.checksOnly)} / {sec(h.pick.p95)}<FirstWord t={h.taskType} />
                     </td>
                     <td className="py-2 pr-3">
-                      {meta(h.baseline.targetId).label}: {pts(h.baseline.quality)} / {pts(h.baseline.checksOnly)} / {sec(h.baseline.p95)}
+                      {meta(h.baseline.targetId).label}: {pts(h.baseline.quality)} / {pts(h.baseline.checksOnly)} / {sec(h.baseline.p95)}<FirstWord t={h.taskType} />
                     </td>
                     <td className="py-2 pr-3">{h.held ? <Badge tone="green">held</Badge> : <Badge tone="bad">{h.why.join(', ')}</Badge>}</td>
                   </tr>

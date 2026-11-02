@@ -11,18 +11,17 @@ export async function callOpenAICompatible(target: Target, prompt: Prompt, opts:
   const key = target.apiKeyEnv ? process.env[target.apiKeyEnv] : undefined;
   if (target.apiKeyEnv && !key) throw new Error(`${target.label}: ${target.apiKeyEnv} is not set`);
 
+  // No system message at all when the app under test doesn't send one.
+  const system = [prompt.playbook, prompt.system].filter(Boolean).join('\n\n');
   const body: Record<string, unknown> = {
     model: target.model,
     stream: true,
     stream_options: { include_usage: true },
     max_tokens: opts.maxTokens,
     temperature: 0,
-    messages: [
-      { role: 'system', content: `${prompt.playbook}\n\n${prompt.system}` },
-      { role: 'user', content: prompt.user },
-    ],
+    messages: [...(system ? [{ role: 'system', content: system }] : []), { role: 'user', content: prompt.user }],
   };
-  if (target.jsonMode) body.response_format = { type: 'json_object' };
+  if (target.jsonMode && prompt.json !== false) body.response_format = { type: 'json_object' };
 
   const started = performance.now();
   const res = await fetch(`${target.baseUrl.replace(/\/$/, '')}/chat/completions`, {

@@ -2,11 +2,10 @@ import { EventEmitter } from 'node:events';
 import { randomUUID } from 'node:crypto';
 import * as store from './db';
 import { judge } from './evals/judge';
-import { runChecks } from './evals/checks';
 import { callTarget, costOf } from './providers';
 import { loadTargets } from './targets';
 import type { Phase, ResultRow, RunConfig, RunEvent, Target, Task } from './types';
-import { buildPrompt, loadWorkload, TASK_TYPES, tasksFor, type Workload } from './workload';
+import { jobInfo, buildPrompt, TASK_TYPES, tasksFor, workloadDef, workloadForRun, type Workload } from './workload';
 
 /**
  * Orchestrates a run:
@@ -41,7 +40,7 @@ export interface Plan {
   load: { target: Target; task: Task; concurrency: number }[];
 }
 
-export function planRun(config: RunConfig, workload: Workload = loadWorkload(), targets: Target[] = loadTargets()): Plan {
+export function planRun(config: RunConfig, workload: Workload = workloadForRun(config), targets: Target[] = loadTargets()): Plan {
   const chosen = config.targetIds.map((id) => targets.find((t) => t.id === id)).filter((t): t is Target => !!t);
   const tasks = tasksFor(workload, config.taskTypes, config.tasksPerType);
   const quality = chosen.flatMap((target) =>
@@ -92,7 +91,7 @@ async function callOnce(runId: string, target: Target, task: Task, workload: Wor
     if (!lanes.has(runId)) lanes.set(runId, new Map());
     lanes.get(runId)!.set(target.id, { key, targetId: target.id, taskId: task.id, phase, text: '', startedAt, firstTokenAt: null });
   }
-  const maxTokens = target.maxTokens ?? TASK_TYPES[task.type].maxTokens;
+  const maxTokens = target.maxTokens ?? jobInfo(task.type)?.maxTokens ?? 1_000;
   let row: Omit<ResultRow, 'id' | 'humanScore' | 'judgeScore' | 'judgeRationale'>;
   try {
     const res = await callTarget(target, buildPrompt(task, workload), {
@@ -109,7 +108,7 @@ async function callOnce(runId: string, target: Target, task: Task, workload: Wor
           }
         : undefined,
     });
-    const { checks, score } = runChecks(task, res.text);
+    const { checks, score } = workloadDef(workload.id).runChecks(task, res.text, workload);
     const genMs = res.ttftMs != null ? res.totalMs - res.ttftMs : res.totalMs;
     row = {
       runId, targetId: target.id, taskId: task.id, taskType: task.type, phase, concurrency, repeat, startedAt,
@@ -136,7 +135,7 @@ async function callOnce(runId: string, target: Target, task: Task, workload: Wor
 async function execute(runId: string, config: RunConfig, plan: Plan) {
   const ac = new AbortController();
   aborts.set(runId, ac);
-  const workload = loadWorkload();
+  const workload = workloadForRun(config);
   const targets = loadTargets();
   const judgeTarget = config.judge.enabled ? targets.find((t) => t.id === config.judge.targetId) : undefined;
   const total = plan.warmup.length + plan.quality.length + plan.load.length;
