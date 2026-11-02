@@ -217,14 +217,15 @@ function Tweaks({ open, onClose }: { open: boolean; onClose: () => void }) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 12 }}
           transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
-          className="solid no-print fixed inset-x-3 bottom-[88px] z-40 max-h-[70dvh] overflow-y-auto rounded-2xl border border-line-strong p-5 shadow-pop scrollbar-thin sm:right-6 sm:left-auto sm:w-[340px]"
+          className="solid no-print fixed inset-x-3 bottom-[88px] z-40 flex max-h-[min(70dvh,calc(100dvh-104px))] flex-col rounded-2xl border border-line-strong shadow-pop sm:right-6 sm:left-auto sm:w-[340px]"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between px-5 pt-5">
             <h2 className="font-head text-[18px]">Tweaks</h2>
             <button onClick={onClose} className="grid size-9 place-items-center rounded-lg text-ink-3 hover:bg-mist hover:text-ink" aria-label="Close tweaks">
               <X className="size-4" />
             </button>
           </div>
+          <div className="min-h-0 flex-auto overflow-y-auto overscroll-contain px-5 pb-4 scrollbar-thin">
           <Field label="Direction">
             <Choice value={look.direction} options={DIRECTIONS.map((d) => ({ id: d.id, label: d.name }))} onChange={(direction) => update({ direction })} />
           </Field>
@@ -238,7 +239,9 @@ function Tweaks({ open, onClose }: { open: boolean; onClose: () => void }) {
           <Slider label="Glass blur" value={look.blur ?? 22} min={0} max={40} step={1} show={(v) => `${v}px`} onChange={(blur) => update({ blur })} />
           <Slider label="Roundness" value={look.roundness} min={0.3} max={1.3} step={0.05} show={(v) => `${Math.round(v * 100)}%`} onChange={(roundness) => update({ roundness })} />
           <Slider label="Text size" value={look.density} min={0.9} max={1.15} step={0.01} show={(v) => `${Math.round(v * 100)}%`} onChange={(density) => update({ density })} />
-          <div className="mt-5 flex gap-2">
+          </div>
+          {/* Pinned, so on a phone these aren't hidden below the fold of a scrolling panel. */}
+          <div className="flex gap-2 border-t border-line px-5 py-3">
             <Button variant="primary" size="sm" className="flex-1" onClick={copy}>Copy this look</Button>
             <Button size="sm" onClick={reset}>Reset</Button>
           </div>
