@@ -1,10 +1,10 @@
 /**
  * The shared rep playbook every task sends first. It's deliberately long
- * and byte-for-byte stable: in Scout the playbook is the bulk of every
+ * and byte-for-byte stable: in Ferret the playbook is the bulk of every
  * prompt, which makes it the obvious prompt-caching candidate. Targets
  * with `promptCaching: true` put a cache breakpoint right after it.
  *
- * Written fresh for Bakeoff (not Scout's private playbooks), same rules.
+ * Written fresh for Bakeoff (not Ferret's private playbooks), same rules.
  */
 export const PLAYBOOK = `# Rep playbook
 

@@ -46,7 +46,7 @@ export default function BriefPage() {
       <article className="mx-auto max-w-[820px] bg-paper px-12 py-11 shadow-lift print:max-w-none print:px-0 print:py-0 print:shadow-none">
         <header className="flex items-start justify-between border-b-2 border-hero pb-4">
           <div>
-            <div className="text-[12px] font-semibold tracking-[0.12em] text-accent-ink uppercase">Inference bake-off · Scout SDR workload</div>
+            <div className="text-[12px] font-semibold tracking-[0.12em] text-accent-ink uppercase">Inference bake-off · Ferret SDR workload</div>
             <h1 className="mt-1 text-[24px] leading-tight font-semibold tracking-[-0.02em]">{run.name}</h1>
           </div>
           <div className="tabular text-right text-[12px] leading-relaxed text-ink-3">
@@ -128,7 +128,7 @@ export default function BriefPage() {
           <div>
             <H small>Method</H>
             <p>
-              Four jobs from Scout, a field sales tool, on 24 fictional accounts with one shared playbook. Latency is timed client-side from the stream, after one warm-up request per target. Quality is half
+              Four jobs from Ferret, a field sales tool, on 24 fictional accounts with one shared playbook. Latency is timed client-side from the stream, after one warm-up request per target. Quality is half
               deterministic checks (format, ground-truth labels, playbook rules) and half an LLM judge (1-5), times success rate. Costs use each provider’s reported token usage and the list prices in the repo’s config.
             </p>
           </div>

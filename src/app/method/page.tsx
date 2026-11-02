@@ -9,9 +9,9 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
     body: (
       <>
         <p>
-          Scout is a prospecting tool used daily in a full-cycle B2B sales job. Its AI work splits into four jobs with very different traffic shapes: a short <b>signal check</b> run on every account,
+          Ferret is a prospecting tool used daily in a full-cycle B2B sales job. Its AI work splits into four jobs with very different traffic shapes: a short <b>signal check</b> run on every account,
           a <b>call debrief</b> after every dial, a <b>cold email</b>, and a long <b>call card</b> before a call block. Bakeoff rebuilds those jobs on 24 fictional Bay Area accounts so no customer data
-          is sent anywhere. Every request carries the same long rep playbook first, as Scout does, which makes it a realistic prompt-caching test.
+          is sent anywhere. Every request carries the same long rep playbook first, as Ferret does, which makes it a realistic prompt-caching test.
         </p>
       </>
     ),

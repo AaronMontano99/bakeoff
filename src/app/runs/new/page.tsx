@@ -211,7 +211,7 @@ function NewRun() {
             )}
           </Section>
 
-          <Section n={2} title="Workload" hint="Scout’s four AI jobs, on fictional accounts">
+          <Section n={2} title="Workload" hint="Ferret’s four AI jobs, on fictional accounts">
             <div className="grid grid-cols-[minmax(0,1fr)] gap-2.5 sm:grid-cols-2">
               {TASK_TYPE_ORDER.map((t) => {
                 const on = types.includes(t);

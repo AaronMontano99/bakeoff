@@ -251,7 +251,7 @@ function Onboarding({ targets, running }: { targets: TargetWithStatus[] | null; 
       body: targets == null ? 'Checking what can run on this machine…' : ready.length ? `${ready.length} ready: ${ready.map((t) => t.label).join(', ')}.` : 'Start Ollama or log in to Claude Code, or add an API key.',
       href: '/targets',
     },
-    { icon: ListChecks, title: 'Workload', done: true, body: `24 real Scout tasks across ${TASK_TYPE_ORDER.map((t) => TASK_TYPES[t].label.toLowerCase()).join(', ')}.`, href: '/workload' },
+    { icon: ListChecks, title: 'Workload', done: true, body: `24 real Ferret tasks across ${TASK_TYPE_ORDER.map((t) => TASK_TYPES[t].label.toLowerCase()).join(', ')}.`, href: '/workload' },
     { icon: Timer, title: 'Run', done: false, body: 'Every task on every target, measured for speed, quality and cost, then judged.', href: '/runs/new' },
   ];
   return (
@@ -263,7 +263,7 @@ function Onboarding({ targets, running }: { targets: TargetWithStatus[] | null; 
             How fast, how good, and how expensive is AI <span className="text-accent-ink">on your real workload?</span>
           </h1>
           <p className="mt-5 max-w-2xl text-[16.5px] leading-relaxed text-ink-2">
-            Bakeoff takes the AI jobs from Scout, a sales tool used every day in the field, and runs them against local, subscription and hosted models. It measures time to first token,
+            Bakeoff takes the AI jobs from Ferret, a sales tool used every day in the field, and runs them against local, subscription and hosted models. It measures time to first token,
             latency under load, cost per request and graded quality, then turns the numbers into a routing recommendation and a monthly business case.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">

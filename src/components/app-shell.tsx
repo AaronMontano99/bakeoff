@@ -1,6 +1,7 @@
 'use client';
 
 import { Command } from 'cmdk';
+import { DEMO } from '@/lib/demo';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   BookOpen,
@@ -91,6 +92,17 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <ShellCtx.Provider value={ctx}>
       <Sky />
+      {DEMO && (
+        <p className="relative z-30 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 bg-accent px-4 py-2 text-center text-[13.5px] text-on-accent">
+          <span>Demo of real past results. Starting runs and saving are turned off.</span>
+          <a href="https://github.com/AaronMontano99/bakeoff" className="font-semibold underline">
+            See the code
+          </a>
+          <a href="https://aaronmontano.vercel.app/" className="font-semibold underline">
+            Back to Aaron&apos;s site
+          </a>
+        </p>
+      )}
       <TopBar pathname={pathname} />
       <main className="pb-32">{children}</main>
       <Dock onSearch={() => setPalette(true)} onShortcuts={() => setShortcuts(true)} onTweaks={() => setTweaks((v) => !v)} tweaksOpen={tweaks} />

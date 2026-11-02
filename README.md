@@ -1,5 +1,7 @@
 # Bakeoff
 
+**See it live: [bakeoff-demo.vercel.app](https://bakeoff-demo.vercel.app)**. The demo shows real results from past runs. Starting new runs and saving are turned off there, since they need API keys and a local model.
+
 I sell technology for a living. For the last two years I've been selling managed IT, cybersecurity and infrastructure to companies in the Bay Area. More and more of the conversations I want to be in are about AI, and I noticed a gap in myself: I could talk about what AI products do, but not how they actually work underneath.
 
 What happens between an app sending a prompt and the first word coming back? Why is one model fast and another slow on the same question? What does prompt caching really save? When does renting a GPU beat paying per token? How do you know a model's answer is any good, beyond reading it and nodding?
@@ -10,9 +12,9 @@ I didn't want to read about those questions. I wanted to measure them. So I buil
 
 ## What it is
 
-Bakeoff takes the AI work from [Scout](https://github.com/AaronMontano99/scout), a prospecting tool I built for my own job and use every day, and runs it against different models: one on my laptop, Claude through my existing plan, and hosted providers when they have an API key. For every request it records how long the first token took, how long the whole answer took, what it cost and how good it was. Then it answers the question a buyer would actually ask: **which model should handle which job, and what will that cost a team per month?**
+Bakeoff takes the AI work from [Ferret](https://github.com/AaronMontano99/ferret), a prospecting tool I built for my own job and use every day, and runs it against different models: one on my laptop, Claude through my existing plan, and hosted providers when they have an API key. For every request it records how long the first token took, how long the whole answer took, what it cost and how good it was. Then it answers the question a buyer would actually ask: **which model should handle which job, and what will that cost a team per month?**
 
-I used a real workload instead of made-up prompts because that's where the interesting answers are. Scout does four very different jobs:
+I used a real workload instead of made-up prompts because that's where the interesting answers are. Ferret does four very different jobs:
 
 | Job | Shape | What matters |
 |---|---|---|
@@ -35,7 +37,7 @@ These are the questions I started with. Each became something Bakeoff measures.
 
 **What happens when lots of people use it at once?** The load test fires requests at 1, 4, 8 or 16 at a time and shows whether the slowest 5% of requests (p95) stay flat or start queueing.
 
-**What does prompt caching really do?** Every Scout request starts with the same long playbook. With caching, the provider stores that prefix and charges far less to reuse it. In my first run, 73-81% of input tokens came from cache.
+**What does prompt caching really do?** Every Ferret request starts with the same long playbook. With caching, the provider stores that prefix and charges far less to reuse it. In my first run, 73-81% of input tokens came from cache.
 
 **How do you grade a model's answer?** Two ways, because each covers the other's blind spot. Deterministic checks catch what a script can verify: valid JSON, the right label, word limits, no banned phrases. An LLM judge grades the parts that need judgment, 1 to 5. Because a judge can be wrong, or biased toward its own model family, you can grade answers yourself and Bakeoff reports how often you and the judge agree.
 

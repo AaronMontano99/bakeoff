@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
+import { DEMO } from '@/lib/demo';
 import type { CheckResult, Phase, ResultRow, RunConfig, RunRow, RunStatus, TaskType } from './types';
 
 /**
@@ -11,8 +12,8 @@ const g = globalThis as unknown as { __bakeoffDb?: DatabaseSync };
 
 export function db(): DatabaseSync {
   if (g.__bakeoffDb) return g.__bakeoffDb;
-  const file = process.env.BAKEOFF_DB ?? path.join(process.cwd(), 'data', 'bakeoff.db');
-  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const file = DEMO ? ':memory:' : (process.env.BAKEOFF_DB ?? path.join(process.cwd(), 'data', 'bakeoff.db'));
+  if (!DEMO) fs.mkdirSync(path.dirname(file), { recursive: true });
   const conn = new DatabaseSync(file);
   conn.exec(`
     PRAGMA journal_mode = WAL;
@@ -59,8 +60,20 @@ export function db(): DatabaseSync {
       created_at INTEGER NOT NULL
     );
   `);
+  if (DEMO) loadSnapshot(conn);
   g.__bakeoffDb = conn;
   return conn;
+}
+
+/** The public demo's data: real past runs from demo/snapshot.json. */
+function loadSnapshot(conn: DatabaseSync): void {
+  const snapshot = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'demo', 'snapshot.json'), 'utf8')) as Record<'runs' | 'results', Row[]>;
+  for (const table of ['runs', 'results'] as const) {
+    for (const row of snapshot[table]) {
+      const columns = Object.keys(row);
+      conn.prepare(`INSERT INTO ${table} (${columns.join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`).run(...(Object.values(row) as (string | number | null)[]));
+    }
+  }
 }
 
 type Row = Record<string, unknown>;

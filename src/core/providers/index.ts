@@ -1,3 +1,4 @@
+import { DEMO } from '@/lib/demo';
 import type { CallResult, Prompt, Target, TargetStatus, Usage } from '../types';
 import { callAnthropic } from './anthropic';
 import { callClaudeCli, claudeCliStatus } from './claude-cli';
@@ -41,6 +42,7 @@ export function costOf(target: Target, usage: Usage, reported?: number): number 
 }
 
 export async function checkTarget(target: Target): Promise<TargetStatus> {
+  if (DEMO) return { state: 'ready', detail: 'Demo' };
   if (!target.enabled) return { state: 'disabled', detail: 'Turned off in config/targets.json' };
   if (target.provider === 'claude-cli') {
     const s = await claudeCliStatus();

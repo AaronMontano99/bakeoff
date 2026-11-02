@@ -8,7 +8,7 @@ import type { CallOptions } from './index';
 /**
  * Claude through the Claude Code CLI (`claude -p`), on whatever claude.ai
  * login this machine has. No API key, no per-call bill. Same isolation as
- * Scout: no user settings, no MCP, no tools, no saved session, an empty
+ * Ferret: no user settings, no MCP, no tools, no saved session, an empty
  * working directory, and ANTHROPIC_API_KEY stripped so it can't silently
  * switch to API billing.
  *

@@ -28,7 +28,7 @@ function table(rows: string[][]) {
   }
 }
 
-const HELP = `${bold('bakeoff')}: inference bake-off on the Scout SDR workload
+const HELP = `${bold('bakeoff')}: inference bake-off on the Ferret SDR workload
 
   npm run bakeoff -- targets                 Which targets are ready to run
   npm run bakeoff -- run [options]           Run a benchmark (live progress in the terminal and the dashboard)
