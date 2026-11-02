@@ -119,7 +119,7 @@ function LatestRun({ id, targets }: { id: string; targets: TargetWithStatus[] | 
 
       <JobBoard model={model} types={TASK_TYPE_ORDER.filter((t) => data.run.config.taskTypes.includes(t))} />
 
-      <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.35fr_1fr]">
         <Card className="min-w-0">
           <CardHeader title="Cost vs quality" subtitle="Up and to the left wins. The line joins targets nothing else beats on both." />
           <div className="px-4 pb-4">
@@ -220,7 +220,7 @@ function RecentRuns({ runs, targets }: { runs: RunListItem[]; targets: TargetWit
         <h2 className="font-head text-[24px]">Recent runs</h2>
         <ButtonLink href="/runs" size="sm" variant="ghost">All runs <ArrowRight className="size-3.5" /></ButtonLink>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {runs.slice(0, 6).map((r) => (
           <Link key={r.id} href={`/runs/${r.id}`} className="group glass rounded-2xl border border-line p-4 shadow-card transition hover:border-line-strong hover:shadow-lift">
             <div className="flex items-center justify-between gap-2">
